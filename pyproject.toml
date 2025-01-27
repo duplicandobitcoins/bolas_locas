@@ -1,21 +1,22 @@
-[project]
+[tool.poetry]
 name = "bolas-locas"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "duplicandobitcoins", email = "duplicandobitcoins@gmail.com"}
-]
-readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "fastapi (>=0.115.7,<0.116.0)",
-    "uvicorn (>=0.34.0,<0.35.0)",
-    "mysql-connector-python (>=9.2.0,<10.0.0)",
-    "pydantic (>=2.10.6,<3.0.0)"
-]
+authors = ["duplicandobitcoins <duplicandobitcoins@gmail.com>"]
 
-packages = [{ include = "bolas_locas" }]
+[tool.poetry.dependencies]
+python = ">=3.13"
+fastapi = "^0.115.7"
+uvicorn = "^0.34.0"
+mysql-connector-python = "^9.2.0"
+pydantic = "^2.10.6"
+
+[tool.poetry.dev-dependencies]
+# Si tienes dependencias de desarrollo, las agregarías aquí. Ejemplo:
+# pytest = "^7.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
