@@ -83,7 +83,7 @@ async def handle_dialogflow_webhook(request: Request):
     existing_alias = cursor.fetchone()
 
     if existing_alias:
-        print(f"❌ Error: El alias {rtaAlias} ya está registrado.")
+        print(f"❌ Error: El alias *{rtaAlias}* ya está registrado.")
         cursor.close()
         conn.close()
         return JSONResponse(content={"fulfillmentText": "El alias ya está registrado."})
@@ -93,7 +93,7 @@ async def handle_dialogflow_webhook(request: Request):
     sponsor_exists = cursor.fetchone()
 
     if not sponsor_exists:
-        error_message = f"❌ Error: El sponsor {rtaSponsor} no existe. Por favor ingresa un sponsor válido."
+        error_message = f"❌ Error: El usuario de la persona que te invitó: *{rtaSponsor}* no existe./n/n Por favor ingresa un usuario válido."
         print(error_message)
         cursor.close()
         conn.close()
@@ -108,7 +108,7 @@ async def handle_dialogflow_webhook(request: Request):
             (rtaCelularNequi, rtaAlias, rtaSponsor, user_id)
         )
         conn.commit()
-        print(f"✅ Usuario {rtaAlias} registrado correctamente.")
+        print(f"✅ Usuario *{rtaAlias}* registrado correctamente.")
     except Exception as e:
         print(f"❌ Error al registrar el usuario: {e}")
         cursor.close()
