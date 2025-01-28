@@ -34,12 +34,17 @@ def check_user_registered(user_id):
 async def handle_dialogflow_webhook(request: Request):
     data = await request.json()
     
-    # 📌 Extraer el Intent y el Action desde Dialogflow
-    intent_name = data["queryResult"]["intent"]["displayName"]  # Extrae el Intent
-    action = data["queryResult"]["action"]  # Extrae el Action
-    user_id = data["originalDetectIntentRequest"]["payload"]["data"]["message"]["from"]["id"]  # Extrae el user_id de Telegram
+    # 📌 Extraer el Intent y el Action
+    intent_name = data["queryResult"]["intent"]["displayName"]
+    action = data["queryResult"]["action"]
 
-    # 📌 Solo ejecutar si el Intent es "RegistroUsuario" y el Action es "actRegistrarUsuario"
+    # 📌 Extraer el user_id de Telegram de manera segura
+    try:
+        user_id = data["originalDetectIntentRequest"]["payload"]["data"]["message"]["from"]["id"]
+    except KeyError:
+        return JSONResponse(content={"fulfillmentText": "Error: No se pudo obtener el ID de usuario de Telegram."}, status_code=200)
+
+    # 📌 Ejecutar solo si el Intent es "RegistroUsuario" y el Action es "actRegistrarUsuario"
     if intent_name == "RegistroUsuario" and action == "actRegistrarUsuario":
         user = check_user_registered(user_id)
         
