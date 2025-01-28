@@ -50,6 +50,55 @@ async def handle_dialogflow_webhook(request: Request):
         print("❌ Error: No se pudo obtener el ID de usuario de Telegram.")
         return JSONResponse(content={"fulfillmentText": "Error: No se pudo obtener el ID de usuario de Telegram."})
 
+
+# ✅ Manejo del intento "MiCuenta"
+if data["queryResult"]["action"] == "actDatosCuenta":
+    print("📌 Acción detectada: MiCuenta")
+
+    # Buscar datos del usuario en la base de datos
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT numero_celular, alias, sponsor FROM jugadores WHERE user_id = %s", (user_id,))
+    usuario = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not usuario:
+        return JSONResponse(content={"fulfillmentText": "❌ No estás registrado en el sistema."})
+
+    # Construir mensaje con datos del usuario
+    mensaje = (
+        f"📋 *Tu cuenta en Bolas Locas:*\n"
+        f"👤 *Alias:* {usuario['alias']}\n"
+        f"📱 *Número registrado en Nequi:* {usuario['numero_celular']}\n"
+        f"🤝 *Sponsor:* {usuario['sponsor']}\n\n"
+        "🔽 ¿Qué quieres hacer?"
+    )
+
+    # Agregar botones de Telegram
+    botones = {
+        "fulfillmentMessages": [
+            {
+                "platform": "TELEGRAM",
+                "payload": {
+                    "telegram": {
+                        "text": mensaje,
+                        "reply_markup": {
+                            "inline_keyboard": [
+                                [{"text": "🔄 Cambiar número Nequi", "callback_data": "cambiar_nequi"}],
+                                [{"text": "💰 Recargar saldo", "callback_data": "recargar_saldo"}]
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    }
+
+    return JSONResponse(content=botones)
+
+
+    
     # ✅ Verificar si el usuario está registrado en la base de datos
     usuario = check_user_registered(user_id)
 
@@ -135,49 +184,4 @@ async def handle_dialogflow_webhook(request: Request):
     return JSONResponse(content={"fulfillmentText": f"✅ Usuario {rtaAlias} registrado correctamente con sponsor {rtaSponsor}."})
 
 
-# ✅ Manejo del intento "MiCuenta"
-if data["queryResult"]["action"] == "actDatosCuenta":
-    print("📌 Acción detectada: MiCuenta")
-
-    # Buscar datos del usuario en la base de datos
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT numero_celular, alias, sponsor FROM jugadores WHERE user_id = %s", (user_id,))
-    usuario = cursor.fetchone()
-    cursor.close()
-    conn.close()
-
-    if not usuario:
-        return JSONResponse(content={"fulfillmentText": "❌ No estás registrado en el sistema."})
-
-    # Construir mensaje con datos del usuario
-    mensaje = (
-        f"📋 *Tu cuenta en Bolas Locas:*\n"
-        f"👤 *Alias:* {usuario['alias']}\n"
-        f"📱 *Número registrado en Nequi:* {usuario['numero_celular']}\n"
-        f"🤝 *Sponsor:* {usuario['sponsor']}\n\n"
-        "🔽 ¿Qué quieres hacer?"
-    )
-
-    # Agregar botones de Telegram
-    botones = {
-        "fulfillmentMessages": [
-            {
-                "platform": "TELEGRAM",
-                "payload": {
-                    "telegram": {
-                        "text": mensaje,
-                        "reply_markup": {
-                            "inline_keyboard": [
-                                [{"text": "🔄 Cambiar número Nequi", "callback_data": "cambiar_nequi"}],
-                                [{"text": "💰 Recargar saldo", "callback_data": "recargar_saldo"}]
-                            ]
-                        }
-                    }
-                }
-            }
-        ]
-    }
-
-    return JSONResponse(content=botones)
 
