@@ -55,7 +55,10 @@ async def handle_dialogflow_webhook(request: Request):
     rtaAlias = data["queryResult"]["parameters"].get("rtaAlias")
     rtaSponsor = data["queryResult"]["parameters"].get("rtaSponsor")
 
+    print(f"Datos recibidos - Celular: {rtaCelularNequi}, Alias: {rtaAlias}, Sponsor: {rtaSponsor}")  # Para depuración
+
     if not rtaCelularNequi or not rtaAlias or not rtaSponsor:
+        print("❌ Error: Faltan parámetros obligatorios.")  # Para depuración
         return JSONResponse(status_code=400, content={"error": "Faltan parámetros obligatorios."})
 
     # Verificar si el alias ya existe
@@ -67,6 +70,7 @@ async def handle_dialogflow_webhook(request: Request):
     existing_alias = cursor.fetchone()
 
     if existing_alias:
+        print(f"❌ Error: El alias {rtaAlias} ya está registrado.")  # Para depuración
         cursor.close()
         conn.close()
         return JSONResponse(status_code=400, content={"error": "El alias ya está registrado."})
@@ -76,16 +80,24 @@ async def handle_dialogflow_webhook(request: Request):
     sponsor_exists = cursor.fetchone()
 
     if not sponsor_exists:
+        print(f"❌ Error: El sponsor {rtaSponsor} no existe.")  # Para depuración
         cursor.close()
         conn.close()
         return JSONResponse(status_code=400, content={"error": "El sponsor no existe. Por favor ingresa un sponsor válido."})
 
     # Si todo está bien, podemos continuar con el registro
-    cursor.execute(
-        "INSERT INTO jugadores (numero_celular, alias, sponsor, user_id) VALUES (%s, %s, %s, %s)",
-        (rtaCelularNequi, rtaAlias, rtaSponsor, user_id)
-    )
-    conn.commit()
+    try:
+        cursor.execute(
+            "INSERT INTO jugadores (numero_celular, alias, sponsor, user_id) VALUES (%s, %s, %s, %s)",
+            (rtaCelularNequi, rtaAlias, rtaSponsor, user_id)
+        )
+        conn.commit()
+        print(f"✅ Usuario {rtaAlias} registrado correctamente.")  # Para depuración
+    except Exception as e:
+        print(f"❌ Error al registrar el usuario: {e}")  # Para depuración
+        cursor.close()
+        conn.close()
+        return JSONResponse(status_code=500, content={"error": "Hubo un error al registrar al usuario."})
 
     cursor.close()
     conn.close()
