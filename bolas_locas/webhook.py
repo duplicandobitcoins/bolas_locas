@@ -44,7 +44,7 @@ async def handle_dialogflow_webhook(request: Request):
     usuario = check_user_registered(user_id)
 
     if usuario:
-        respuesta = "⚠️ATENCIÓN⚠️ El registro no fue procesado debido a que ésta cuenta de Telegram ya se encuentra registrada en el Juego Bolas Locas."
+        respuesta = "⚠️ATENCIÓN⚠️ El registro no fue procesado debido a que ésta cuenta de Telegram ya se encuentra registrada en el Juego **Bolas Locas**."
         return JSONResponse(content={"fulfillmentText": respuesta})
 
     # ✅ Extraer los parámetros enviados desde Dialogflow
@@ -83,17 +83,17 @@ async def handle_dialogflow_webhook(request: Request):
     existing_alias = cursor.fetchone()
 
     if existing_alias:
-        print(f"❌ Error: El alias *{rtaAlias}* ya está registrado.")
+        print(f"❌ Error: El alias **{rtaAlias}** ya está registrado.")
         cursor.close()
         conn.close()
-        return JSONResponse(content={"fulfillmentText": "El alias ya está registrado."})
+        return JSONResponse(content={"fulfillmentText": "❌ Error: El alias **{rtaAlias}** ya está registrado."})
 
     # Verificar si el sponsor existe en la base de datos
     cursor.execute("SELECT * FROM jugadores WHERE alias = %s", (rtaSponsor,))
     sponsor_exists = cursor.fetchone()
 
     if not sponsor_exists:
-        error_message = f"❌ Error: El usuario de la persona que te invitó: **{rtaSponsor}** no existe.\n\nPor favor ingresa un usuario válido."
+        error_message = f"❌ Error: El usuario de la persona que te invitó: **{rtaSponsor}** no existe.\n\nPor favor vuelve a intentarlo e ingresa un usuario válido."
         print(error_message)
         cursor.close()
         conn.close()
@@ -118,4 +118,4 @@ async def handle_dialogflow_webhook(request: Request):
     cursor.close()
     conn.close()
 
-    return JSONResponse(content={"fulfillmentText": "✅ Usuario registrado correctamente."})
+    return JSONResponse(content={"fulfillmentText": "✅ Usuario *{rtaAlias}* registrado correctamente."})
