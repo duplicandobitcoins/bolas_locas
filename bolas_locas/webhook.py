@@ -62,7 +62,7 @@ async def handle_dialogflow_webhook(request: Request):
     rtaCelularNequi = re.sub(r"\D", "", str(rtaCelularNequi))  # Eliminar caracteres que no sean números
     
     if not re.fullmatch(r"3\d{9}", rtaCelularNequi):
-        error_message = "❌ El número de celular debe tener 10 dígitos, empezar por 3 y no contener caracteres especiales."
+        error_message = f"❌ El número de celular debe tener 10 dígitos, empezar por 3 y no contener caracteres especiales."
         print(error_message)
         return JSONResponse(content={
             "fulfillmentMessages": [{"text": {"text": [error_message]}}]
@@ -70,7 +70,7 @@ async def handle_dialogflow_webhook(request: Request):
     
     numero_celular = int(rtaCelularNequi)
     if numero_celular < 3000000000 or numero_celular > 3999999999:
-        error_message = "❌ El número de celular debe estar entre 3000000000 y 3999999999."
+        error_message = f"❌ El número de celular debe estar entre 3000000000 y 3999999999."
         print(error_message)
         return JSONResponse(content={
             "fulfillmentMessages": [{"text": {"text": [error_message]}}]
@@ -83,7 +83,7 @@ async def handle_dialogflow_webhook(request: Request):
     existing_alias = cursor.fetchone()
 
     if existing_alias:
-        error_message = "❌ Error: El alias {rtaAlias} ya está registrado."
+        error_message = f"❌ Error: El alias **{rtaAlias}** ya está registrado."
         cursor.close()
         conn.close()
         print(error_message)
@@ -96,7 +96,7 @@ async def handle_dialogflow_webhook(request: Request):
     sponsor_exists = cursor.fetchone()
 
     if not sponsor_exists:
-        error_message = "❌ Error: El usuario de la persona que te invitó: **{rtaSponsor}** no existe.\n\nPor favor vuelve a intentarlo e ingresa un usuario válido."
+        error_message = f"❌ Error: El usuario de la persona que te invitó: **{rtaSponsor}** no existe.\n\nPor favor vuelve a intentarlo e ingresa un usuario válido."
         print(error_message)
         cursor.close()
         conn.close()
@@ -121,7 +121,7 @@ async def handle_dialogflow_webhook(request: Request):
     cursor.close()
     conn.close()
 
-    ok_message = "✅ Usuario **{rtaAlias}** registrado correctamente."
+    ok_message = f"✅ Usuario **{rtaAlias}** registrado correctamente."
     print(ok_message)
     cursor.close()
     conn.close()
