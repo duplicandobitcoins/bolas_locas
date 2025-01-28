@@ -80,11 +80,19 @@ async def handle_dialogflow_webhook(request: Request):
     cursor.execute("SELECT * FROM jugadores WHERE alias = %s", (rtaSponsor,))
     sponsor_exists = cursor.fetchone()
 
-    if not sponsor_exists:
-        print(f"❌ Error: El sponsor {rtaSponsor} no existe.")  # Para depuración
-        cursor.close()
-        conn.close()
-        return JSONResponse(status_code=400, content={"error": "El sponsor no existe. Por favor ingresa un sponsor válido."})
+if not sponsor_exists:
+    error_message = f"❌ Error: El sponsor {rtaSponsor} no existe. Por favor ingresa un sponsor válido."
+    print(error_message)  # Para depuración
+    
+    cursor.close()
+    conn.close()
+    
+    # 🔹 Enviar la respuesta correctamente a Dialogflow sin error 400
+    return JSONResponse(content={
+        "fulfillmentMessages": [
+            {"text": {"text": [error_message]}}
+        ]
+    }, status_code=200)  # Cambiamos de 400 a 200 para que Dialogflow lo procese
 
     # Si todo está bien, podemos continuar con el registro
     try:
