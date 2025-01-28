@@ -28,45 +28,46 @@ def check_user_registered(phone_number):
 @router.post("/webhook")
 async def dialogflow_webhook(request: Request):
     data = await request.json()
-    
-    # Extraer intent y número de teléfono del usuario desde Telegram
+
+    # 📌 Capturar el user_id automáticamente
+    user_id = data.get("originalDetectIntentRequest", {}).get("payload", {}).get("data", {}).get("from", {}).get("id")
+
     intent_name = data.get("queryResult", {}).get("intent", {}).get("displayName")
-    phone_number = data.get("originalDetectIntentRequest", {}).get("payload", {}).get("data", {}).get("from", {}).get("phone_number")
 
-    if not phone_number:
-        return {"fulfillmentText": "No pude obtener tu número de teléfono. Asegúrate de que tu cuenta de Telegram tiene un número asociado."}
+    if not user_id:
+        return {"fulfillmentText": "No pude obtener tu identificación de usuario en Telegram."}
 
-    # Si el intent es "RegistroUsuario"
-    if intent_name == "RegistroUsuario":
-        user = check_user_registered(phone_number)
+    # Verificar si el usuario ya está registrado
+    user = check_user_registered(user_id)
 
-        if user:
-            return {"fulfillmentText": f"Ya te encuentras registrado con el alias {user['alias']}."}
+    if user:
+        return {"fulfillmentText": f"Ya te encuentras registrado con el alias {user['alias']}."}
 
-        # Respuesta con botones SI y NO usando Custom Payload
-        response = {
-            "fulfillmentMessages": [
-                {
-                    "text": {
-                        "text": [f"Deseas registrar el número {phone_number} en el juego Bolas Locas?"]
-                    }
-                },
-                {
-                    "payload": {
-                        "telegram": {
-                            "reply_markup": {
-                                "inline_keyboard": [
-                                    [
-                                        {"text": "SI", "callback_data": "S1R3g1B0l4L0c4"},
-                                        {"text": "NO", "callback_data": "N0R3g1B0l4L0c4"}
-                                    ]
+    # Si no está registrado, pedir el número de teléfono
+    response = {
+        "fulfillmentMessages": [
+            {
+                "text": {
+                    "text": [f"Deseas registrar el usuario {user_id} en el juego Bolas Locas?"]
+                }
+            },
+            {
+                "payload": {
+                    "telegram": {
+                        "reply_markup": {
+                            "inline_keyboard": [
+                                [
+                                    {"text": "SI", "callback_data": "S1R3g1B0l4L0c4"},
+                                    {"text": "NO", "callback_data": "N0R3g1B0l4L0c4"}
                                 ]
-                            }
+                            ]
                         }
                     }
                 }
-            ]
-        }
-        return response
+            }
+        ]
+    }
+    return response
+
 
     return {"fulfillmentText": "No entiendo esa solicitud."}
