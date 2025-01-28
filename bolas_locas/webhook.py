@@ -83,7 +83,7 @@ async def handle_dialogflow_webhook(request: Request):
     existing_alias = cursor.fetchone()
 
     if existing_alias:
-        error_message = f"❌ Error: El alias **{rtaAlias}** ya está registrado."
+        error_message = f"❌ Error: El alias *{rtaAlias}* ya está registrado."
         cursor.close()
         conn.close()
         print(error_message)
