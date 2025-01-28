@@ -2,11 +2,22 @@ from fastapi import FastAPI, Request
 import mysql.connector
 from config import db_config
 from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 
 
 router = APIRouter()
 
 app = FastAPI()
+
+
+@router.post("/webhook")
+async def handle_dialogflow_webhook(request: Request):
+    data = await request.json()
+    print("📩 Request de Dialogflow:", data)  # Para depuración
+    return JSONResponse(content={"fulfillmentText": "Recibido en webhook"}, status_code=200)
+
+
 
 def check_user_registered(user_id):
     """ Verifica si el usuario ya está registrado en la base de datos. """
