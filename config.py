@@ -1,8 +1,8 @@
 import os
 
-# Configuración de la base de datos MySQL
-DB_HOST = "127.0.0.1"  # Dirección de tu servidor MySQL
-DB_PORT = "3306"  # Puerto por defecto de MySQL
-DB_USER = "root"  # Usuario de MySQL
-DB_PASSWORD = "M@r14n1t4tj"  # Cambia esto por la contraseña que configuraste
-DB_NAME = "bolas_locas"  # Nombre de la base de datos
+# Configuración de la base de datos de Railway
+DB_HOST = os.getenv("DB_HOST", "mysql.railway.internal")
+DB_PORT = os.getenv("DB_PORT", "3306")
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "gipLtWlfZfkaopbYuWSfKmbnxxwQuhLZ")
+DB_NAME = os.getenv("DB_NAME", "railway")
