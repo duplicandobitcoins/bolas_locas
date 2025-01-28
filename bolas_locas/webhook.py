@@ -1,6 +1,10 @@
 from fastapi import FastAPI, Request
 import mysql.connector
 from config import db_config
+from fastapi import APIRouter
+
+
+router = APIRouter()
 
 app = FastAPI()
 
