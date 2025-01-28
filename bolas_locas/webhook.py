@@ -1,48 +1,53 @@
-from fastapi import FastAPI, Request
-import mysql.connector
-from config import db_config
-from fastapi import APIRouter
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-
+import mysql.connector
+from config import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
 
 router = APIRouter()
 
-app = FastAPI()
+# ✅ Función para conectar a la base de datos
+def get_db_connection():
+    return mysql.connector.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME
+    )
 
+# ✅ Función para verificar si el usuario está registrado
+def check_user_registered(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    query = "SELECT numero_celular FROM jugadores WHERE user_id = %s"
+    cursor.execute(query, (user_id,))
+    result = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+    
+    return result  # Retorna None si no está registrado
 
+# ✅ Webhook de Dialogflow
 @router.post("/webhook")
 async def handle_dialogflow_webhook(request: Request):
     data = await request.json()
-    print("📩 Request de Dialogflow:", data)  # Para depuración
-    return JSONResponse(content={"fulfillmentText": "Recibido en webhook"}, status_code=200)
-
-
-
-def check_user_registered(user_id):
-    """ Verifica si el usuario ya está registrado en la base de datos. """
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT user_id FROM jugadores WHERE user_id = %s", (user_id,))
-    result = cursor.fetchone()
-    conn.close()
-    return result is not None  # Retorna True si está registrado, False si no
-
-@app.post("/webhook")
-async def dialogflow_webhook(request: Request):
-    """ Maneja los webhooks de Dialogflow """
-    data = await request.json()
     
-    # Extraer la intención y la acción de Dialogflow
-    intent = data['queryResult']['intent']['displayName']
-    action = data['queryResult'].get('action', '')
-    user_id = data['originalDetectIntentRequest']['payload']['data']['from']['id']
+    # 📌 Extraer el Intent y el Action desde Dialogflow
+    intent_name = data["queryResult"]["intent"]["displayName"]  # Extrae el Intent
+    action = data["queryResult"]["action"]  # Extrae el Action
+    user_id = data["originalDetectIntentRequest"]["payload"]["data"]["message"]["from"]["id"]  # Extrae el user_id de Telegram
 
-    # Verificar si se activó la acción actRegistrarUsuario
-    if action == "actRegistrarUsuario":
-        if check_user_registered(user_id):
-            return {"fulfillmentText": "✅ Ya estás registrado en Bolas Locas."}
+    # 📌 Solo ejecutar si el Intent es "RegistroUsuario" y el Action es "actRegistrarUsuario"
+    if intent_name == "RegistroUsuario" and action == "actRegistrarUsuario":
+        user = check_user_registered(user_id)
+        
+        if user:
+            response_text = "Ya estás registrado."
         else:
-            return {"fulfillmentText": "❌ Aún no estás registrado en Bolas Locas."}
-
-    return {"fulfillmentText": "No se reconoce la acción solicitada."}
+            response_text = "Aún no estás registrado."
+        
+        return JSONResponse(content={"fulfillmentText": response_text}, status_code=200)
+    
+    return JSONResponse(content={"fulfillmentText": "No se reconoce el intento."}, status_code=200)
