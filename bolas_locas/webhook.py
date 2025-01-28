@@ -15,34 +15,39 @@ def get_db_connection():
         database=DB_NAME
     )
 
-# ✅ Función para verificar si el usuario está registrado
+
+# ✅ Función para verificar si un usuario ya está registrado
 def check_user_registered(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
-    query = "SELECT numero_celular FROM jugadores WHERE user_id = %s"
-    cursor.execute(query, (user_id,))
+
+    cursor.execute("SELECT numero_celular FROM jugadores WHERE user_id = %s", (user_id,))
     result = cursor.fetchone()
-    
+
     cursor.close()
     conn.close()
-    
-    return result  # Retorna None si no está registrado
 
+    return result  # Retorna None si el usuario no está registrado
+    
 # ✅ Webhook de Dialogflow
 @router.post("/webhook")
 async def handle_dialogflow_webhook(request: Request):
     data = await request.json()
 
-    # Extrae el user_id de Telegram desde la estructura de datos
+    # ✅ Extraer el user_id de Telegram
     try:
         user_id = data["originalDetectIntentRequest"]["payload"]["data"]["from"]["id"]
-        print(f"User ID de Telegram: {user_id}")  # Para ver si todo está funcionando correctamente
+        print(f"User ID de Telegram: {user_id}")  # Para depuración
     except KeyError:
-        print("Error: No se pudo obtener el ID de usuario de Telegram.")
+        print("❌ Error: No se pudo obtener el ID de usuario de Telegram.")
         return JSONResponse(content={"fulfillmentText": "Error: No se pudo obtener el ID de usuario de Telegram."})
 
-    # Aquí va la lógica para verificar si el usuario está registrado o no
-    # ...
+    # ✅ Verificar si el usuario está registrado en la base de datos
+    usuario = check_user_registered(user_id)
 
-    return JSONResponse(content={"fulfillmentText": "Recibido en webhook"})
+    if usuario:
+        respuesta = "✅ Ya te encuentras registrado."
+    else:
+        respuesta = "❌ Aún no estás registrado."
+
+    return JSONResponse(content={"fulfillmentText": respuesta})
