@@ -26,6 +26,16 @@ def check_user_registered(user_id):
     conn.close()
     return result  # Retorna None si el usuario no está registrado
 
+# ✅ Función para obtener el último usuario registrado
+def get_last_registered_alias():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT alias FROM jugadores ORDER BY numero_celular DESC LIMIT 1")
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result["alias"] if result else None
+
 # ✅ Webhook de Dialogflow
 @router.post("/webhook")
 async def handle_dialogflow_webhook(request: Request):
@@ -76,42 +86,43 @@ async def handle_dialogflow_webhook(request: Request):
             "fulfillmentMessages": [{"text": {"text": [error_message]}}]
         }, status_code=200)
 
-    # Verificar si el alias ya existe
+    # ✅ Verificar si se debe autoasignar el sponsor
+    if rtaSponsor.lower() == "auto":
+        rtaSponsor = get_last_registered_alias()
+        if not rtaSponsor:
+            error_message = "❌ No hay usuarios registrados para asignar como sponsor."
+            print(error_message)
+            return JSONResponse(content={
+                "fulfillmentMessages": [{"text": {"text": [error_message]}}]
+            }, status_code=200)
+    else:
+        # Verificar si el sponsor existe en la base de datos
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM jugadores WHERE alias = %s", (rtaSponsor,))
+        sponsor_exists = cursor.fetchone()
+
+        if not sponsor_exists:
+            error_message = f"❌ Error: El usuario {rtaSponsor} de la persona que te invitó no existe. Por favor revisa si está bien escrito y vuelve a intentarlo."
+            print(error_message)
+            cursor.close()
+            conn.close()
+            return JSONResponse(content={
+                "fulfillmentMessages": [{"text": {"text": [error_message]}}]
+            }, status_code=200)
+        cursor.close()
+        conn.close()
+
+    # ✅ Registrar al usuario en la base de datos
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM jugadores WHERE alias = %s", (rtaAlias,))
-    existing_alias = cursor.fetchone()
-
-    if existing_alias:
-        error_message = f"❌ Error: El alias {rtaAlias} no está disponible."
-        print(error_message)
-        cursor.close()
-        conn.close()
-        return JSONResponse(content={
-            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
-        }, status_code=200)
-
-    # Verificar si el sponsor existe en la base de datos
-    cursor.execute("SELECT * FROM jugadores WHERE alias = %s", (rtaSponsor,))
-    sponsor_exists = cursor.fetchone()
-
-    if not sponsor_exists:
-        error_message = f"❌ Error: El usuario {rtaSponsor} de la persona que te invitó no existe. Por favor revisa si está bien escrito y vuelve a intentarlo, si no estas seguro podemos asignarte un sponsor automaticamente."
-        print(error_message)
-        cursor.close()
-        conn.close()
-        return JSONResponse(content={
-            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
-        }, status_code=200)
-
-    # Si todo está bien, podemos continuar con el registro
     try:
         cursor.execute(
             "INSERT INTO jugadores (numero_celular, alias, sponsor, user_id) VALUES (%s, %s, %s, %s)",
             (rtaCelularNequi, rtaAlias, rtaSponsor, user_id)
         )
         conn.commit()
-        print(f"✅ Usuario {rtaAlias} registrado correctamente.")
+        print(f"✅ Usuario {rtaAlias} registrado correctamente con sponsor {rtaSponsor}.")
     except Exception as e:
         print(f"❌ Error al registrar el usuario: {e}")
         cursor.close()
@@ -121,4 +132,4 @@ async def handle_dialogflow_webhook(request: Request):
     cursor.close()
     conn.close()
 
-    return JSONResponse(content={"fulfillmentText": "✅ Usuario registrado correctamente."})
+    return JSONResponse(content={"fulfillmentText": f"✅ Usuario {rtaAlias} registrado correctamente con sponsor {rtaSponsor}."})
