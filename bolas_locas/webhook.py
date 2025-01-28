@@ -48,7 +48,7 @@ async def handle_dialogflow_webhook(request: Request):
     if usuario:
         return JSONResponse(content={
             "fulfillmentMessages": [
-                {"text": {"text": ["✅ Esta cuenta de Telegram ya se encuentra registrada en el Juego Bolas Locas."]}}
+                {"text": {"text": ["⚠️ATENCIÓN⚠️: Los datos no fueron registrados ya que la cuenta de Telegram desde la que estas chateando ya se encuentra registrada en el Juego Bolas Locas."]}}
             ]
         })
 
