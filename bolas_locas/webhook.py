@@ -93,7 +93,7 @@ async def handle_dialogflow_webhook(request: Request):
     sponsor_exists = cursor.fetchone()
 
     if not sponsor_exists:
-        error_message = f"❌ Error: El usuario de la persona que te invitó: *{rtaSponsor}* no existe./n/n Por favor ingresa un usuario válido."
+        error_message = f"❌ Error: El usuario de la persona que te invitó: **{rtaSponsor}** no existe.\n\nPor favor ingresa un usuario válido."
         print(error_message)
         cursor.close()
         conn.close()
