@@ -44,7 +44,7 @@ async def handle_dialogflow_webhook(request: Request):
     usuario = check_user_registered(user_id)
 
     if usuario:
-        respuesta = "✅ Esta cuenta de Telegram ya se encuentra registrada en el Juego Bolas Locas."
+        respuesta = "⚠️ATENCIÓN⚠️ El registro no fue procesado debido a que ésta cuenta de Telegram ya se encuentra registrada en el Juego Bolas Locas."
         return JSONResponse(content={"fulfillmentText": respuesta})
 
     # ✅ Extraer los parámetros enviados desde Dialogflow
