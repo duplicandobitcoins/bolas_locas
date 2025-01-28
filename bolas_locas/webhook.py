@@ -31,6 +31,7 @@ def check_user_registered(user_id):
 # ✅ Webhook de Dialogflow
 @router.post("/webhook")
 async def handle_dialogflow_webhook(request: Request):
+    print("🚨 Webhook llamado") 
     data = await request.json()
 
     # ✅ Extraer el user_id de Telegram
