@@ -26,6 +26,11 @@ def check_user_registered(user_id):
     conn.close()
     return result  # Retorna None si el usuario no está registrado
 
+def escape_markdown(text):
+    """ Escapa caracteres especiales de Telegram Markdown v2 """
+    escape_chars = r'_*[]()~`>#+-=|{}.!'
+    return re.sub(r'([{}])'.format(re.escape(escape_chars)), r'\\\1', text)
+
 # ✅ Webhook de Dialogflow
 @router.post("/webhook")
 async def handle_dialogflow_webhook(request: Request):
@@ -52,6 +57,9 @@ async def handle_dialogflow_webhook(request: Request):
     rtaAlias = data["queryResult"]["parameters"].get("rtaAlias")
     rtaSponsor = data["queryResult"]["parameters"].get("rtaSponsor")
 
+    alias_escaped = escape_markdown(rtaAlias)
+    sponsor_escaped = escape_markdown(rtaSponsor)
+    
     print(f"Datos recibidos - Celular: {rtaCelularNequi}, Alias: {rtaAlias}, Sponsor: {rtaSponsor}")
 
     if not rtaCelularNequi or not rtaAlias or not rtaSponsor:
@@ -83,7 +91,7 @@ async def handle_dialogflow_webhook(request: Request):
     existing_alias = cursor.fetchone()
 
     if existing_alias:
-        error_message = f"❌ Error: El alias *{rtaAlias}* ya está registrado."
+        error_message = f"❌ Error: El alias *{alias_ecaped}* ya está registrado."
         cursor.close()
         conn.close()
         print(error_message)
@@ -96,7 +104,7 @@ async def handle_dialogflow_webhook(request: Request):
     sponsor_exists = cursor.fetchone()
 
     if not sponsor_exists:
-        error_message = f"❌ Error: El usuario de la persona que te invitó: **{rtaSponsor}** no existe.\n\nPor favor vuelve a intentarlo e ingresa un usuario válido."
+        error_message = f"❌ Error: El usuario de la persona que te invitó: *{sponsor_escaped}* no existe.\n\nPor favor vuelve a intentarlo e ingresa un usuario válido."
         print(error_message)
         cursor.close()
         conn.close()
@@ -121,7 +129,7 @@ async def handle_dialogflow_webhook(request: Request):
     cursor.close()
     conn.close()
 
-    ok_message = f"✅ Usuario **{rtaAlias}** registrado correctamente."
+    ok_message = f"✅ Usuario *{alias_escaped}* registrado correctamente."
     print(ok_message)
     cursor.close()
     conn.close()
