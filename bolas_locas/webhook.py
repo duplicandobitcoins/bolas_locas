@@ -26,6 +26,7 @@ def check_user_registered(user_id):
     conn.close()
     return result  # Retorna None si el usuario no está registrado
 
+# ✅ Escapar caracteres especiales de Telegram Markdown v2
 def escape_markdown(text):
     """ Escapa caracteres especiales de Telegram Markdown v2 """
     escape_chars = r'_*[]()~`>#+-=|{}.!'
@@ -43,46 +44,41 @@ async def handle_dialogflow_webhook(request: Request):
         print(f"User ID de Telegram: {user_id}")  # Para depuración
     except KeyError:
         print("❌ Error: No se pudo obtener el ID de usuario de Telegram.")
-        return JSONResponse(content={"fulfillmentText": "Error: No se pudo obtener el ID de usuario de Telegram."})
+        return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": ["Error: No se pudo obtener el ID de usuario de Telegram."]}}]})
 
     # ✅ Verificar si el usuario está registrado en la base de datos
     usuario = check_user_registered(user_id)
 
     if usuario:
-        respuesta = "⚠️ATENCIÓN⚠️ El registro no fue procesado debido a que ésta cuenta de Telegram ya se encuentra registrada en el Juego **Bolas Locas**."
-        return JSONResponse(content={"fulfillmentText": respuesta})
+        respuesta = "⚠️ *ATENCIÓN* ⚠️\n\nEl registro no fue procesado porque esta cuenta de Telegram ya está registrada en el Juego *Bolas Locas*."
+        return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": [respuesta]}}]})
 
     # ✅ Extraer los parámetros enviados desde Dialogflow
     rtaCelularNequi = data["queryResult"]["parameters"].get("rtaCelularNequi")
     rtaAlias = data["queryResult"]["parameters"].get("rtaAlias")
     rtaSponsor = data["queryResult"]["parameters"].get("rtaSponsor")
 
-    alias_escaped = escape_markdown(rtaAlias)
-    sponsor_escaped = escape_markdown(rtaSponsor)
-    
-    print(f"Datos recibidos - Celular: {rtaCelularNequi}, Alias: {rtaAlias}, Sponsor: {rtaSponsor}")
-
     if not rtaCelularNequi or not rtaAlias or not rtaSponsor:
         print("❌ Error: Faltan parámetros obligatorios.")
-        return JSONResponse(content={"fulfillmentText": "Faltan parámetros obligatorios."})
+        return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": ["Faltan parámetros obligatorios."]}}]})
 
     # ✅ Validación del número de celular de Nequi
     rtaCelularNequi = re.sub(r"\D", "", str(rtaCelularNequi))  # Eliminar caracteres que no sean números
     
     if not re.fullmatch(r"3\d{9}", rtaCelularNequi):
-        error_message = f"❌ El número de celular debe tener 10 dígitos, empezar por 3 y no contener caracteres especiales."
+        error_message = "❌ *Error:* El número de celular debe tener *10 dígitos*, empezar por *3* y no contener caracteres especiales."
         print(error_message)
-        return JSONResponse(content={
-            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
-        }, status_code=200)
-    
+        return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": [error_message]}}]})
+
     numero_celular = int(rtaCelularNequi)
     if numero_celular < 3000000000 or numero_celular > 3999999999:
-        error_message = f"❌ El número de celular debe estar entre 3000000000 y 3999999999."
+        error_message = "❌ *Error:* El número de celular debe estar entre *3000000000* y *3999999999*."
         print(error_message)
-        return JSONResponse(content={
-            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
-        }, status_code=200)
+        return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": [error_message]}}]})
+
+    # ✅ Escapar alias y sponsor para Markdown v2
+    alias_escaped = escape_markdown(rtaAlias)
+    sponsor_escaped = escape_markdown(rtaSponsor)
 
     # Verificar si el alias ya existe
     conn = get_db_connection()
@@ -91,28 +87,24 @@ async def handle_dialogflow_webhook(request: Request):
     existing_alias = cursor.fetchone()
 
     if existing_alias:
-        error_message = f"❌ Error: El alias *{alias_ecaped}* ya está registrado."
+        error_message = f"❌ *Error:* El alias *{alias_escaped}* ya está registrado.\n\nPor favor elige otro alias."
         cursor.close()
         conn.close()
         print(error_message)
-        return JSONResponse(content={
-            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
-        }, status_code=200)
+        return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": [error_message]}}]})
 
     # Verificar si el sponsor existe en la base de datos
     cursor.execute("SELECT * FROM jugadores WHERE alias = %s", (rtaSponsor,))
     sponsor_exists = cursor.fetchone()
 
     if not sponsor_exists:
-        error_message = f"❌ Error: El usuario de la persona que te invitó: *{sponsor_escaped}* no existe.\n\nPor favor vuelve a intentarlo e ingresa un usuario válido."
+        error_message = f"❌ *Error:* El usuario *{sponsor_escaped}* no existe.\n\nPor favor ingresa un usuario válido."
         print(error_message)
         cursor.close()
         conn.close()
-        return JSONResponse(content={
-            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
-        }, status_code=200)
+        return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": [error_message]}}]})
 
-    # Si todo está bien, podemos continuar con el registro
+    # ✅ Registrar usuario en la base de datos
     try:
         cursor.execute(
             "INSERT INTO jugadores (numero_celular, alias, sponsor, user_id) VALUES (%s, %s, %s, %s)",
@@ -124,18 +116,12 @@ async def handle_dialogflow_webhook(request: Request):
         print(f"❌ Error al registrar el usuario: {e}")
         cursor.close()
         conn.close()
-        return JSONResponse(content={"fulfillmentText": "Hubo un error al registrar al usuario."})
+        return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": ["Hubo un error al registrar al usuario."]}}]})
 
     cursor.close()
     conn.close()
 
-    ok_message = f"✅ Usuario *{alias_escaped}* registrado correctamente."
+    ok_message = f"✅ *Registro exitoso*\n\nEl usuario *{alias_escaped}* ha sido registrado correctamente en *Bolas Locas*."
     print(ok_message)
-    cursor.close()
-    conn.close()
     
-    return JSONResponse(content={
-        "fulfillmentMessages": [{"text": {"text": [ok_message]}}]
-    }, status_code=200)
-
-    
+    return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": [ok_message]}}]})
