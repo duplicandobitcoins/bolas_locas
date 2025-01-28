@@ -33,5 +33,16 @@ def check_user_registered(user_id):
 @router.post("/webhook")
 async def handle_dialogflow_webhook(request: Request):
     data = await request.json()
-    print("📌 Datos recibidos en el webhook:", data)  # <-- Agregar esto para depuración
+
+    # Extrae el user_id de Telegram desde la estructura de datos
+    try:
+        user_id = data["originalDetectIntentRequest"]["payload"]["data"]["from"]["id"]
+        print(f"User ID de Telegram: {user_id}")  # Para ver si todo está funcionando correctamente
+    except KeyError:
+        print("Error: No se pudo obtener el ID de usuario de Telegram.")
+        return JSONResponse(content={"fulfillmentText": "Error: No se pudo obtener el ID de usuario de Telegram."})
+
+    # Aquí va la lógica para verificar si el usuario está registrado o no
+    # ...
+
     return JSONResponse(content={"fulfillmentText": "Recibido en webhook"})
