@@ -25,12 +25,13 @@ def check_user_registered(user_id):
     cursor.close()
     conn.close()
     return result  # Retorna None si el usuario no está registrado
-
+'''
 # ✅ Escapar caracteres especiales de Telegram Markdown v2
 def escape_markdown(text):
     """ Escapa caracteres especiales de Telegram Markdown v2 """
     escape_chars = r'_*[]()~`>#+-=|{}.!'
     return re.sub(r'([{}])'.format(re.escape(escape_chars)), r'\\\1', text)
+'''
 
 # ✅ Webhook de Dialogflow
 @router.post("/webhook")
@@ -75,11 +76,11 @@ async def handle_dialogflow_webhook(request: Request):
         error_message = "❌ *Error:* El número de celular debe estar entre *3000000000* y *3999999999*."
         print(error_message)
         return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": [error_message]}}]})
-
+'''
     # ✅ Escapar alias y sponsor para Markdown v2
     alias_escaped = escape_markdown(rtaAlias)
     sponsor_escaped = escape_markdown(rtaSponsor)
-
+'''
     # Verificar si el alias ya existe
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -87,7 +88,7 @@ async def handle_dialogflow_webhook(request: Request):
     existing_alias = cursor.fetchone()
 
     if existing_alias:
-        error_message = f"❌ *Error:* El alias *{alias_escaped}* ya está registrado.\n\nPor favor elige otro alias."
+        error_message = f"❌ *Error:* El alias *{rtaAlias}* ya está registrado.\n\nPor favor elige otro alias."
         cursor.close()
         conn.close()
         print(error_message)
@@ -98,7 +99,7 @@ async def handle_dialogflow_webhook(request: Request):
     sponsor_exists = cursor.fetchone()
 
     if not sponsor_exists:
-        error_message = f"❌ *Error:* El usuario *{sponsor_escaped}* no existe.\n\nPor favor ingresa un usuario válido."
+        error_message = f"❌ *Error:* El usuario *{rtaSponsor}* no existe.\n\nPor favor ingresa un usuario válido."
         print(error_message)
         cursor.close()
         conn.close()
@@ -121,7 +122,7 @@ async def handle_dialogflow_webhook(request: Request):
     cursor.close()
     conn.close()
 
-    ok_message = f"✅ *Registro exitoso*\n\nEl usuario *{alias_escaped}* ha sido registrado correctamente en *Bolas Locas*."
+    ok_message = f"✅ *Registro exitoso*\n\nEl usuario *{rtaAlias}* ha sido registrado correctamente en *Bolas Locas*."
     print(ok_message)
     
     return JSONResponse(content={"fulfillmentMessages": [{"text": {"text": [ok_message]}}]})
