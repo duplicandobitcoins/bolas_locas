@@ -1,8 +1,9 @@
 import os
 
-# Configuración de la base de datos de Railway
-DB_HOST = os.getenv("DB_HOST", "mysql.railway.internal")
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "gipLtWlfZfkaopbYuWSfKmbnxxwQuhLZ")
-DB_NAME = os.getenv("DB_NAME", "railway")
+db_config = {
+    "host": os.getenv("MYSQLHOST", "mysql.railway.internal"),
+    "user": os.getenv("MYSQLUSER", "root"),
+    "password": os.getenv("MYSQLPASSWORD", "gipLtWlfZfkaopbYuWSfKmbnxxwQuhLZ"),
+    "database": os.getenv("MYSQLDATABASE", "railway"),
+    "port": int(os.getenv("MYSQLPORT", 3306))
+}
