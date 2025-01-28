@@ -46,9 +46,11 @@ async def handle_dialogflow_webhook(request: Request):
     usuario = check_user_registered(user_id)
 
     if usuario:
-        # Si el usuario ya está registrado, respondemos con un mensaje y no hacemos más validaciones
-        respuesta = "✅ Esta cuenta de Telegram ya se encuentra registrada en el Juego Bolas Locas."
-        return JSONResponse(content={"fulfillmentText": respuesta})
+        return JSONResponse(content={
+            "fulfillmentMessages": [
+                {"text": {"text": ["✅ Esta cuenta de Telegram ya se encuentra registrada en el Juego Bolas Locas."]}}
+            ]
+        })
 
     # ✅ Si el usuario no está registrado, continuamos con las validaciones de alias y sponsor
     # Extraemos los parámetros enviados desde Dialogflow
@@ -59,14 +61,17 @@ async def handle_dialogflow_webhook(request: Request):
     print(f"Datos recibidos - Celular: {rtaCelularNequi}, Alias: {rtaAlias}, Sponsor: {rtaSponsor}")  # Para depuración
 
     if not rtaCelularNequi or not rtaAlias or not rtaSponsor:
-        print("❌ Error: Faltan parámetros obligatorios.")  # Para depuración
-        return JSONResponse(status_code=400, content={"error": "Faltan parámetros obligatorios."})
+        return JSONResponse(content={
+            "fulfillmentMessages": [
+                {"text": {"text": ["❌ Error: Faltan parámetros obligatorios."]}}
+            ]
+        })
 
-    # Verificar si el alias ya existe
+    # ✅ Conectar a la base de datos
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Verificar si el alias existe en la base de datos
+    # ✅ Verificar si el alias ya está registrado
     cursor.execute("SELECT * FROM jugadores WHERE alias = %s", (rtaAlias,))
     existing_alias = cursor.fetchone()
 
@@ -74,27 +79,31 @@ async def handle_dialogflow_webhook(request: Request):
         print(f"❌ Error: El alias {rtaAlias} ya está registrado.")  # Para depuración
         cursor.close()
         conn.close()
-        return JSONResponse(status_code=400, content={"error": "El alias ya está registrado."})
+        return JSONResponse(content={
+            "fulfillmentMessages": [
+                {"text": {"text": [f"❌ Error: El alias {rtaAlias} ya está registrado."]}}
+            ]
+        })
 
-    # Verificar si el sponsor existe en la base de datos
+    # ✅ Verificar si el sponsor existe en la base de datos
     cursor.execute("SELECT * FROM jugadores WHERE alias = %s", (rtaSponsor,))
     sponsor_exists = cursor.fetchone()
 
-if not sponsor_exists:
-    error_message = f"❌ Error: El sponsor {rtaSponsor} no existe. Por favor ingresa un sponsor válido."
-    print(error_message)  # Para depuración
-    
-    cursor.close()
-    conn.close()
-    
-    # 🔹 Enviar la respuesta correctamente a Dialogflow sin error 400
-    return JSONResponse(content={
-        "fulfillmentMessages": [
-            {"text": {"text": [error_message]}}
-        ]
-    }, status_code=200)  # Cambiamos de 400 a 200 para que Dialogflow lo procese
+    if not sponsor_exists:
+        error_message = f"❌ Error: El sponsor {rtaSponsor} no existe. Por favor ingresa un sponsor válido."
+        print(error_message)  # Para depuración
+        
+        cursor.close()
+        conn.close()
+        
+        # 🔹 Enviar la respuesta correctamente a Dialogflow
+        return JSONResponse(content={
+            "fulfillmentMessages": [
+                {"text": {"text": [error_message]}}
+            ]
+        })
 
-    # Si todo está bien, podemos continuar con el registro
+    # ✅ Si todo está bien, podemos continuar con el registro
     try:
         cursor.execute(
             "INSERT INTO jugadores (numero_celular, alias, sponsor, user_id) VALUES (%s, %s, %s, %s)",
@@ -106,10 +115,18 @@ if not sponsor_exists:
         print(f"❌ Error al registrar el usuario: {e}")  # Para depuración
         cursor.close()
         conn.close()
-        return JSONResponse(status_code=500, content={"error": "Hubo un error al registrar al usuario."})
+        return JSONResponse(content={
+            "fulfillmentMessages": [
+                {"text": {"text": ["❌ Hubo un error al registrar al usuario."]}}
+            ]
+        })
 
     cursor.close()
     conn.close()
 
-    # Responder que el usuario fue registrado
-    return JSONResponse(content={"fulfillmentText": "✅ Usuario registrado correctamente."})
+    # ✅ Responder que el usuario fue registrado correctamente
+    return JSONResponse(content={
+        "fulfillmentMessages": [
+            {"text": {"text": ["✅ Usuario registrado correctamente. ¡Bienvenido a Bolas Locas!"]}}
+        ]
+    })
