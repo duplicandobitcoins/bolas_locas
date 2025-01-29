@@ -33,7 +33,7 @@ def handle_cambiar_nequi(user_id, rtaNuevoNequi):
     # Validaciones del nuevo número de Nequi
     rtaNuevoNequi = re.sub(r"\D", "", str(rtaNuevoNequi))
     if not re.fullmatch(r"3\d{9}", rtaNuevoNequi):
-       error_message = "❌ El número de celular debe tener 10 dígitos, empezar por 3 y no contener caracteres especiales."
+        error_message = "❌ El número de celular debe tener 10 dígitos, empezar por 3 y no contener caracteres especiales."
         print(error_message)
         return JSONResponse(content={
             "fulfillmentMessages": [{"text": {"text": [error_message]}}]
