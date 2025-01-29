@@ -26,6 +26,38 @@ def check_user_registered(user_id):
     conn.close()
     return result  # Retorna None si el usuario no está registrado
 
+# ✅ Función para manejar el cambio de número de Nequi
+def handle_cambiar_nequi(user_id, rtaNuevoNequi):
+    print(" Acción detectada: CambiarNequi")
+
+    # Validaciones del nuevo número de Nequi
+    rtaNuevoNequi = re.sub(r"\D", "", str(rtaNuevoNequi))
+    if not re.fullmatch(r"3\d{9}", rtaNuevoNequi):
+       error_message = "❌ El número de celular debe tener 10 dígitos, empezar por 3 y no contener caracteres especiales."
+        print(error_message)
+        return JSONResponse(content={
+            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
+        }, status_code=200)
+    
+    numero_celular = int(rtaNuevoNequi)
+    if numero_celular < 3000000000 or numero_celular > 3999999999:
+        error_message = "❌ El número de celular debe estar entre 3000000000 y 3999999999."
+        print(error_message)
+        return JSONResponse(content={
+            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
+        }, status_code=200)
+        
+    # Actualizar el número de celular en la base de datos
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("UPDATE jugadores SET numero_celular = %s WHERE user_id = %s", (rtaNuevoNequi, user_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return JSONResponse(content={"fulfillmentText": "✅ Número de Nequi actualizado correctamente."})
+
+
 # ✅ Función para obtener el último usuario registrado
 def get_last_registered_alias():
     conn = get_db_connection()
@@ -64,6 +96,9 @@ async def handle_dialogflow_webhook(request: Request):
 
     return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
 
+   if action == "actCambiarNequi":
+        rtaNuevoNequi = data["queryResult"]["parameters"].get("rtaNuevoNequi")
+        return handle_cambiar_nequi(user_id, rtaNuevoNequi)
 
 # ✅ Función separada para manejar "MiCuenta"
 def handle_mi_cuenta(user_id):
