@@ -50,12 +50,18 @@ async def handle_dialogflow_webhook(request: Request):
         print("❌ Error: No se pudo obtener el ID de usuario de Telegram.")
         return JSONResponse(content={"fulfillmentText": "Error: No se pudo obtener el ID de usuario de Telegram."})
 
+    # ✅ Verificar si el intento es "MiCuenta"
+    action = data["queryResult"].get("action")
+    if action == "actDatosCuenta":
+        return handle_mi_cuenta(user_id)
 
-# ✅ Manejo del intento "MiCuenta"
-if data["queryResult"]["action"] == "actDatosCuenta":
+    return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
+
+
+# ✅ Función separada para manejar "MiCuenta"
+def handle_mi_cuenta(user_id):
     print("📌 Acción detectada: MiCuenta")
 
-    # Buscar datos del usuario en la base de datos
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT numero_celular, alias, sponsor FROM jugadores WHERE user_id = %s", (user_id,))
@@ -66,7 +72,6 @@ if data["queryResult"]["action"] == "actDatosCuenta":
     if not usuario:
         return JSONResponse(content={"fulfillmentText": "❌ No estás registrado en el sistema."})
 
-    # Construir mensaje con datos del usuario
     mensaje = (
         f"📋 *Tu cuenta en Bolas Locas:*\n"
         f"👤 *Alias:* {usuario['alias']}\n"
@@ -75,7 +80,6 @@ if data["queryResult"]["action"] == "actDatosCuenta":
         "🔽 ¿Qué quieres hacer?"
     )
 
-    # Agregar botones de Telegram
     botones = {
         "fulfillmentMessages": [
             {
@@ -96,7 +100,6 @@ if data["queryResult"]["action"] == "actDatosCuenta":
     }
 
     return JSONResponse(content=botones)
-
 
     
     # ✅ Verificar si el usuario está registrado en la base de datos
