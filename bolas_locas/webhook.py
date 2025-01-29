@@ -81,9 +81,9 @@ def handle_mi_cuenta(user_id):
 
     mensaje = (
         f"Tu cuenta en *Bolas Locas:*\n"
-        f"👤 *Alias:* {usuario['alias']}\n"
-        f"📱 *Número registrado en Nequi:* {usuario['numero_celular']}\n"
-        f"🤝 *Sponsor:* {usuario['sponsor']}\n\n"
+        f"👤 *Alias:* _{usuario['alias']}_\n"
+        f"📱 *Número registrado en Nequi:* _{usuario['numero_celular']}_\n"
+        f"🤝 *Sponsor:* _{usuario['sponsor']}_\n\n"
         "🔽 ¿Qué quieres hacer?"
     )
 
@@ -97,7 +97,7 @@ def handle_mi_cuenta(user_id):
                         "text": mensaje,
                         "reply_markup": {
                             "inline_keyboard": [
-                                [{"text": "🔄 Cambiar número Nequi", "callback_data": "cambiar_nequi"}],
+                                [{"text": "🔄 Cambiar número Nequi", "callback_data": "c4mb14r_n3qu1"}],
                                 [{"text": "💰 Recargar saldo", "callback_data": "recargar_saldo"}]
                             ]
                         }
