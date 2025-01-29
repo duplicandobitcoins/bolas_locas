@@ -80,7 +80,7 @@ def handle_mi_cuenta(user_id):
         return JSONResponse(content={"fulfillmentText": "❌ No estás registrado en el sistema."})
 
     mensaje = (
-        f"📋 *Tu cuenta en Bolas Locas:*\n"
+        f"<b>Tu cuenta en Bolas Locas:<b>\n"
         f"👤 *Alias:* {usuario['alias']}\n"
         f"📱 *Número registrado en Nequi:* {usuario['numero_celular']}\n"
         f"🤝 *Sponsor:* {usuario['sponsor']}\n\n"
