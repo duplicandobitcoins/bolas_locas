@@ -30,7 +30,7 @@ def check_user_registered(user_id):
 def get_open_tableros():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT id, nombre, precio_bolita FROM tableros WHERE estado = 'abierto'")
+    cursor.execute("SELECT id_tablero, nombre, precio_por_bolita FROM tableros WHERE estado = 'abierto'")
     tableros = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -55,7 +55,7 @@ def handle_jugar(user_id):
 
     for tablero in tableros:
         botones["inline_keyboard"].append([
-            {"text": f"{tablero['nombre']} - 💰 {tablero['precio_bolita']}", "callback_data": f"tablero_{tablero['id']}"}
+            {"text": f"{tablero['nombre']} - 💰 {tablero['precio_por_bolita']}", "callback_data": f"tablero_{tablero['id_tablero']}"}
         ])
 
     return JSONResponse(content={
