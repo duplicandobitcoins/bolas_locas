@@ -168,3 +168,88 @@ def handle_cambiar_nequi(user_id, rtaNuevoNequi):
     conn.close()
 
     return JSONResponse(content={"fulfillmentText": "✅ Número de Nequi actualizado correctamente."})
+
+    #######################
+    # ✅ Verificar si el usuario está registrado en la base de datos
+    usuario = check_user_registered(user_id)
+
+    if usuario:
+        respuesta = "⚠️ATENCIÓN⚠️ El registro no pudo realizarse debido a que ésta cuenta de Telegram ya se encuentra registrada en el Juego Bolas Locas."
+        return JSONResponse(content={"fulfillmentText": respuesta})
+
+    # ✅ Extraer los parámetros enviados desde Dialogflow
+    rtaCelularNequi = data["queryResult"]["parameters"].get("rtaCelularNequi")
+    rtaAlias = data["queryResult"]["parameters"].get("rtaAlias")
+    rtaSponsor = data["queryResult"]["parameters"].get("rtaSponsor")
+
+    print(f"Datos recibidos - Celular: {rtaCelularNequi}, Alias: {rtaAlias}, Sponsor: {rtaSponsor}")
+
+    if not rtaCelularNequi or not rtaAlias or not rtaSponsor:
+        print("❌ Error: Faltan parámetros obligatorios.")
+        return JSONResponse(content={"fulfillmentText": "Faltan parámetros obligatorios."})
+
+    # ✅ Validación del número de celular de Nequi
+    rtaCelularNequi = re.sub(r"\D", "", str(rtaCelularNequi))  # Eliminar caracteres que no sean números
+    
+    if not re.fullmatch(r"3\d{9}", rtaCelularNequi):
+        error_message = "❌ El número de celular debe tener 10 dígitos, empezar por 3 y no contener caracteres especiales."
+        print(error_message)
+        return JSONResponse(content={
+            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
+        }, status_code=200)
+    
+    numero_celular = int(rtaCelularNequi)
+    if numero_celular < 3000000000 or numero_celular > 3999999999:
+        error_message = "❌ El número de celular debe estar entre 3000000000 y 3999999999."
+        print(error_message)
+        return JSONResponse(content={
+            "fulfillmentMessages": [{"text": {"text": [error_message]}}]
+        }, status_code=200)
+
+    # ✅ Verificar si se debe autoasignar el sponsor
+    if rtaSponsor.lower() == "auto":
+        rtaSponsor = get_last_registered_alias()
+        if not rtaSponsor:
+            error_message = "❌ No hay usuarios registrados para asignar como sponsor."
+            print(error_message)
+            return JSONResponse(content={
+                "fulfillmentMessages": [{"text": {"text": [error_message]}}]
+            }, status_code=200)
+    else:
+        # Verificar si el sponsor existe en la base de datos
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM jugadores WHERE alias = %s", (rtaSponsor,))
+        sponsor_exists = cursor.fetchone()
+
+        if not sponsor_exists:
+            error_message = f"❌ Error: El usuario {rtaSponsor} de la persona que te invitó no existe. Por favor revisa si está bien escrito y vuelve a intentarlo."
+            print(error_message)
+            cursor.close()
+            conn.close()
+            return JSONResponse(content={
+                "fulfillmentMessages": [{"text": {"text": [error_message]}}]
+            }, status_code=200)
+        cursor.close()
+        conn.close()
+
+    # ✅ Registrar al usuario en la base de datos
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "INSERT INTO jugadores (numero_celular, alias, sponsor, user_id) VALUES (%s, %s, %s, %s)",
+            (rtaCelularNequi, rtaAlias, rtaSponsor, user_id)
+        )
+        conn.commit()
+        print(f"✅ Usuario {rtaAlias} registrado correctamente con sponsor {rtaSponsor}.")
+    except Exception as e:
+        print(f"❌ Error al registrar el usuario: {e}")
+        cursor.close()
+        conn.close()
+        return JSONResponse(content={"fulfillmentText": "Hubo un error al registrar al usuario."})
+
+    cursor.close()
+    conn.close()
+
+    return JSONResponse(content={"fulfillmentText": f"✅ Usuario {rtaAlias} registrado correctamente con sponsor {rtaSponsor}."})
