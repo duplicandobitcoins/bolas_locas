@@ -42,15 +42,22 @@ async def handle_dialogflow_webhook(request: Request):
     print("🚨 Webhook llamado") 
     data = await request.json()
 
-    # ✅ Extraer el user_id de Telegram
+    # ✅ Intentar extraer el user_id de Telegram
+    user_id = None
     try:
         user_id = data["originalDetectIntentRequest"]["payload"]["data"]["from"]["id"]
-        print(f"User ID de Telegram: {user_id}")  # Para depuración
     except KeyError:
-        print("❌ Error: No se pudo obtener el ID de usuario de Telegram.")
-        return JSONResponse(content={"fulfillmentText": "Error: No se pudo obtener el ID de usuario de Telegram."})
+        print("⚠️ No se pudo obtener user_id desde el mensaje de texto.")
 
-    # ✅ Verificar si el intento es "MiCuenta"
+    # ✅ Si no se obtuvo el user_id, verificar si es un callback
+    if not user_id:
+        try:
+            user_id = data["originalDetectIntentRequest"]["payload"]["data"]["callback_query"]["from"]["id"]
+            print(f"📌 User ID obtenido desde callback: {user_id}")
+        except KeyError:
+            return JSONResponse(content={"fulfillmentText": "❌ Error: No se pudo obtener el ID de usuario de Telegram."})
+
+    # ✅ Verificar la acción
     action = data["queryResult"].get("action")
     if action == "actDatosCuenta":
         return handle_mi_cuenta(user_id)
