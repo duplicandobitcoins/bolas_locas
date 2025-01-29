@@ -94,11 +94,13 @@ async def handle_dialogflow_webhook(request: Request):
     if action == "actDatosCuenta":
         return handle_mi_cuenta(user_id)
 
-    return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
-
-   if action == "actCambiarNequi":
+    if action == "actCambiarNequi":
         rtaNuevoNequi = data["queryResult"]["parameters"].get("rtaNuevoNequi")
         return handle_cambiar_nequi(user_id, rtaNuevoNequi)
+
+    return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
+
+
 
 # ✅ Función separada para manejar "MiCuenta"
 def handle_mi_cuenta(user_id):
