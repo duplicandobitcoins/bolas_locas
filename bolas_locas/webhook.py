@@ -358,9 +358,11 @@ def handle_mi_cuenta(user_id):
                         "text": mensaje,
                         "reply_markup": {
                             "inline_keyboard": [
-                                [{"text": "🔄 Cambiar número Nequi", "callback_data": "c4mb14r_n3qu1"}],
                                 [{"text": "💲 Recargar saldo", "callback_data": "recargar_saldo"}],
+                                [{"text": "🔄 Cambiar número Nequi", "callback_data": "c4mb14r_n3qu1"}],
+                                [{"text": "📋 Mis tableros", "callback_data": "M1st4bl4s"}]
                                 [{"text": "🔮 Jugar", "callback_data": "1n1c10Ju3g0"}]
+                            
                             ]
                         }
                     }
