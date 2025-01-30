@@ -201,12 +201,19 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     
     cursor.execute("SELECT SUM(cantidad_bolitas) as compradas FROM jugadores_tableros WHERE id_tablero = %s", (id_tablero,))
     stats = cursor.fetchone()
+
+    # 🔹 NUEVO: Obtener la cantidad de bolitas compradas por el jugador en este tablero
+    cursor.execute("SELECT SUM(cantidad_bolitas) AS compradas_por_jugador FROM jugadores_tableros WHERE user_id = %s AND id_tablero = %s", (user_id, id_tablero))
+    jugador_stats = cursor.fetchone()
+    
     cursor.close()
     conn.close()
     
     costo_total = int(cantidad) * tablero["precio_por_bolita"]
-
     disponibles = tablero["max_bolitas"] - (stats["compradas"] or 0)
+    bolitas_compradas_jugador = jugador_stats["compradas_por_jugador"] or 0
+    bolitas_totales_despues_compra = bolitas_compradas_jugador + int(cantidad)
+
     
     if jugador["saldo"] < costo_total:
         return JSONResponse(content={"fulfillmentText": "❌ No tienes saldo suficiente."})
@@ -214,6 +221,9 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
         return JSONResponse(content={"fulfillmentText": "❌ Cantidad de bolitas fuera del rango permitido."})
     if cantidad > disponibles:
         return JSONResponse(content={"fulfillmentText": "❌ No hay suficientes bolitas disponibles."})
+    if bolitas_totales_despues_compra > tablero["max_bolitas_por_jugador"]:
+        return JSONResponse(content={"fulfillmentText": f"❌ No puedes comprar más bolitas. Ya tienes {bolitas_compradas_jugador} y el límite es {tablero['max_bolitas_por_jugador']}."})
+
     
     conn = get_db_connection()
     cursor = conn.cursor()
