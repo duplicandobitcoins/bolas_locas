@@ -98,6 +98,18 @@ def get_open_tableros():
     conn.close()
     return tableros
 
+# ✅ Función para obtener el último usuario registrado
+def get_last_registered_alias():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT alias FROM jugadores ORDER BY numero_celular DESC LIMIT 1")
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result["alias"] if result else None
+
+
+
 # ✅ Función para manejar la selección de "Jugar"
 def handle_jugar(user_id):
     print("🎮 Acción detectada: Jugar")
