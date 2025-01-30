@@ -164,7 +164,7 @@ async def handle_seleccionar_tablero(user_id, rtaTableroID):
     if not tablero:
         return JSONResponse(content={"fulfillmentText": "❌ Tablero no encontrado."})
     
-    cursor.execute("SELECT COUNT(*) as inscritos, SUM(cantidad_bolitas) as bolitas_compradas FROM jugadores_tableros WHERE id_tablero = %s", (id_tablero,))
+    cursor.execute("SELECT COUNT(DISTINCT user_id) as inscritos, SUM(cantidad_bolitas) as bolitas_compradas FROM jugadores_tableros WHERE id_tablero = %s", (id_tablero,))
     stats = cursor.fetchone()
     cursor.close()
     conn.close()
