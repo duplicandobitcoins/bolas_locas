@@ -128,7 +128,7 @@ def handle_jugar(user_id):
     botones = {"inline_keyboard": []}
     
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
     for tablero in tableros:
         ID_tablero_jackpot= tablero['id_tablero']
@@ -149,7 +149,8 @@ def handle_jugar(user_id):
             {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {precio_bolita} - Acumulado: {acumulado_currency}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
         ])
 
-
+    cursor.close()
+    conn.close()
 
     return JSONResponse(content={
         "fulfillmentMessages": [
@@ -165,8 +166,7 @@ def handle_jugar(user_id):
             }
         ]
     })
-    cursor.close()
-    conn.close()
+
 #########
 
 async def handle_seleccionar_tablero(user_id, rtaTableroID):
