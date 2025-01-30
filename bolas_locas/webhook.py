@@ -218,7 +218,7 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("UPDATE jugadores SET saldo = saldo - %s WHERE user_id = %s", (costo_total, user_id))
-    cursor.execute("INSERT INTO jugadores_tableros (numero_celular, id_tablero, cantidad_bolitas, monto_pagado) VALUES (%s, %s, %s, %s)", (user_id, id_tablero, cantidad, costo_total))
+    cursor.execute("INSERT INTO jugadores_tableros (user_id, id_tablero, cantidad_bolitas, monto_pagado) VALUES (%s, %s, %s, %s)", (user_id, id_tablero, cantidad, costo_total))
     cursor.execute("UPDATE jackpots SET monto_acumulado = monto_acumulado + %s WHERE id_tablero = %s", (costo_total, id_tablero))
     conn.commit()
     cursor.close()
