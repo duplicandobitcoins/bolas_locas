@@ -147,6 +147,75 @@ def handle_jugar(user_id):
         ]
     })
 
+#########
+
+async def handle_seleccionar_tablero(user_id, tablero_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM tableros WHERE id_tablero = %s", (tablero_id,))
+    tablero = cursor.fetchone()
+    
+    if not tablero:
+        return JSONResponse(content={"fulfillmentText": "❌ Tablero no encontrado."})
+    
+    cursor.execute("SELECT COUNT(*) as inscritos, SUM(cantidad_bolitas) as bolitas_compradas FROM jugadores_tableros WHERE id_tablero = %s", (tablero_id,))
+    stats = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    disponibles = tablero["max_bolitas"] - (stats["bolitas_compradas"] or 0)
+    
+    return JSONResponse(content={
+        "fulfillmentMessages": [{
+            "payload": {
+                "telegram": {
+                    "text": f"Tablero: {tablero['nombre']}\nMáx. Bolitas: {tablero['max_bolitas']}\nPrecio/Bolita: {tablero['precio_por_bolita']}\nBolitas disponibles: {disponibles}\nMín. por jugador: {tablero['min_bolitas_por_jugador']}\nMáx. por jugador: {tablero['max_bolitas_por_jugador']}\nJugadores inscritos: {stats['inscritos']}",
+                    "reply_markup": {"inline_keyboard": [[{"text": "Comprar Bolitas", "callback_data": f"ComprarBolitas_{tablero_id}"}]]}
+                }
+            }
+        }]
+    })
+
+async def handle_comprar_bolitas(user_id, tablero_id, cantidad):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT saldo FROM jugadores WHERE user_id = %s", (user_id,))
+    jugador = cursor.fetchone()
+    
+    cursor.execute("SELECT * FROM tableros WHERE id_tablero = %s", (tablero_id,))
+    tablero = cursor.fetchone()
+    
+    cursor.execute("SELECT SUM(cantidad_bolitas) as compradas FROM jugadores_tableros WHERE id_tablero = %s", (tablero_id,))
+    stats = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    costo_total = cantidad * tablero["precio_por_bolita"]
+    disponibles = tablero["max_bolitas"] - (stats["compradas"] or 0)
+    
+    if jugador["saldo"] < costo_total:
+        return JSONResponse(content={"fulfillmentText": "❌ No tienes saldo suficiente."})
+    if cantidad < tablero["min_bolitas_por_jugador"] or cantidad > tablero["max_bolitas_por_jugador"]:
+        return JSONResponse(content={"fulfillmentText": "❌ Cantidad de bolitas fuera del rango permitido."})
+    if cantidad > disponibles:
+        return JSONResponse(content={"fulfillmentText": "❌ No hay suficientes bolitas disponibles."})
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE jugadores SET saldo = saldo - %s WHERE user_id = %s", (costo_total, user_id))
+    cursor.execute("INSERT INTO jugadores_tableros (numero_celular, id_tablero, cantidad_bolitas, monto_pagado) VALUES (%s, %s, %s, %s)", (user_id, tablero_id, cantidad, costo_total))
+    cursor.execute("UPDATE jackpots SET monto_acumulado = monto_acumulado + %s WHERE id_tablero = %s", (costo_total, tablero_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    return JSONResponse(content={"fulfillmentText": "✅ Compra realizada con éxito."})
+
+
+#########
+
+
+
 # ✅ Webhook de Dialogflow
 @router.post("/webhook")
 async def handle_dialogflow_webhook(request: Request):
