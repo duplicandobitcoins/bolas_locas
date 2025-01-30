@@ -205,6 +205,10 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     # 🔹 NUEVO: Obtener la cantidad de bolitas compradas por el jugador en este tablero
     cursor.execute("SELECT SUM(cantidad_bolitas) AS compradas_por_jugador FROM jugadores_tableros WHERE user_id = %s AND id_tablero = %s", (user_id, id_tablero))
     jugador_stats = cursor.fetchone()
+
+     # 🔹 NUEVO: Obtener el monto actual del jackpot del tablero
+    cursor.execute("SELECT monto_acumulado FROM jackpots WHERE id_tablero = %s", (id_tablero,))
+    jackpot = cursor.fetchone()
     
     cursor.close()
     conn.close()
@@ -227,9 +231,14 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     
     conn = get_db_connection()
     cursor = conn.cursor()
+    
     cursor.execute("UPDATE jugadores SET saldo = saldo - %s WHERE user_id = %s", (costo_total, user_id))
     cursor.execute("INSERT INTO jugadores_tableros (user_id, id_tablero, cantidad_bolitas, monto_pagado) VALUES (%s, %s, %s, %s)", (user_id, id_tablero, cantidad, costo_total))
-    cursor.execute("UPDATE jackpots SET monto_acumulado = monto_acumulado + %s WHERE id_tablero = %s", (costo_total, id_tablero))
+    if jackpot:
+        cursor.execute("UPDATE jackpots SET monto_acumulado = monto_acumulado + %s WHERE id_tablero = %s", (costo_total, id_tablero))
+    else:
+        cursor.execute("INSERT INTO jackpots (id_tablero, monto_acumulado) VALUES (%s, %s)", (id_tablero, costo_total))
+
     conn.commit()
     cursor.close()
     conn.close()
