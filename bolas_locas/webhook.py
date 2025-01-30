@@ -270,7 +270,7 @@ async def handle_dialogflow_webhook(request: Request):
     if action == "actComprarBolitas":
         rtaCantBolitas = data["queryResult"]["parameters"].get("rtaCantBolitas")
         rtaTableroID = data["queryResult"]["parameters"].get("rtaTableroID")
-        return await handle_seleccionar_tablero(user_id, rtaTableroID, rtaCantBolitas)
+        return await handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas)
 
 
     return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
