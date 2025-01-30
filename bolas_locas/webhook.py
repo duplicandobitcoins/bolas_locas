@@ -124,12 +124,13 @@ def handle_jugar(user_id):
     if not tableros:
         return JSONResponse(content={"fulfillmentText": "🚧 No hay tableros disponibles en este momento."})
 
+    precio_bolita = "${:,.0f}".format(tablero['precio_por_bolita']).replace(',', '.')
     mensaje = "🎲 *Selecciona un tablero para jugar:*"
     botones = {"inline_keyboard": []}
 
     for tablero in tableros:
         botones["inline_keyboard"].append([
-            {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {tablero['precio_por_bolita']}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
+            {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {precio_bolita}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
         ])
 
     return JSONResponse(content={
@@ -166,16 +167,21 @@ async def handle_seleccionar_tablero(user_id, rtaTableroID):
     
     cursor.execute("SELECT COUNT(DISTINCT user_id) as inscritos, SUM(cantidad_bolitas) as bolitas_compradas FROM jugadores_tableros WHERE id_tablero = %s", (id_tablero,))
     stats = cursor.fetchone()
+    cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (id_tablero,))
+    stats = cursor.fetchone()
+    
     cursor.close()
     conn.close()
     
     disponibles = tablero["max_bolitas"] - (stats["bolitas_compradas"] or 0)
+    precio_bolita = "${:,.0f}".format(tablero['precio_por_bolita']).replace(',', '.')
+    jackpot = "${:,.0f}".format(jackpots['premio_ganador']).replace(',', '.')
     
     return JSONResponse(content={
         "fulfillmentMessages": [{
             "payload": {
                 "telegram": {
-                    "text": f"TableroID: {tablero['id_tablero']}\nTablero: {tablero['nombre']}\nMáx. Bolitas: {tablero['max_bolitas']}\nPrecio/Bolita: {tablero['precio_por_bolita']}\nBolitas disponibles: {disponibles}\nMín. por jugador: {tablero['min_bolitas_por_jugador']}\nMáx. por jugador: {tablero['max_bolitas_por_jugador']}\nJugadores inscritos: {stats['inscritos']}",
+                    "text": f"TableroID: {tablero['id_tablero']}\nTablero: {tablero['nombre']}\nMáx. Bolitas: {tablero['max_bolitas']}\nPrecio/Bolita: {precio_bolita}\nBolitas disponibles: {disponibles}\nMín. por jugador: {tablero['min_bolitas_por_jugador']}\nMáx. por jugador: {tablero['max_bolitas_por_jugador']}\nJugadores inscritos: {stats['inscritos']}\n\n JackPot: {jackpot}",
                     "reply_markup": {"inline_keyboard": [[{"text": "Comprar Bolitas", "callback_data": f"C0mpr4rB0l1t4s|{id_tablero}"}]]}
                 }
             }
@@ -301,7 +307,7 @@ def handle_mi_cuenta(user_id):
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT numero_celular, alias, sponsor FROM jugadores WHERE user_id = %s", (user_id,))
+    cursor.execute("SELECT numero_celular, alias, sponsor, saldo FROM jugadores WHERE user_id = %s", (user_id,))
     usuario = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -309,11 +315,14 @@ def handle_mi_cuenta(user_id):
     if not usuario:
         return JSONResponse(content={"fulfillmentText": "❌ No estás registrado en el sistema."})
 
+    saldo_formateado = "${:,.0f}".format(usuario['saldo']).replace(',', '.')
+    
     mensaje = (
         f"Tu cuenta en *Bolas Locas:*\n\n"
         f"👤 *Usuario:* _{usuario['alias']}_\n"
         f"📱 *Número registrado en Nequi:* _{usuario['numero_celular']}_\n"
-        f"🤝 *Sponsor:* _{usuario['sponsor']}_\n\n"
+        f"🤝 *Patrocinador:* _{usuario['sponsor']}_\n\n"
+        f"🤝 *SALDO:* _{saldo_formateado}_\n\n"
         "🔽 ¿Qué quieres hacer?"
     )
 
