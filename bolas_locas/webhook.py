@@ -135,8 +135,8 @@ def handle_jugar(user_id):
     
         cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (tablero['id_tablero'],))
         jackpots = cursor.fetchone()
-        print(f"el premio es: {jackpots['premio_ganador'])}")
-        
+        print(f"el premio es: {jackpots['premio_ganador']}")
+
         jackpot = "${:,.0f}".format(jackpots['premio_ganador']).replace(',', '.')
         
         precio_bolita = "${:,.0f}".format(tablero['precio_por_bolita']).replace(',', '.')
