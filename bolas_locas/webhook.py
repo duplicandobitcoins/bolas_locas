@@ -216,7 +216,7 @@ def handle_mi_cuenta(user_id):
                             "inline_keyboard": [
                                 [{"text": "🔄 Cambiar número Nequi", "callback_data": "c4mb14r_n3qu1"}],
                                 [{"text": "💰 Recargar saldo", "callback_data": "recargar_saldo"}],
-                                [{"text": "🎮 Jugar", "callback_data": "jugar"}]
+                                [{"text": "🎮 Jugar", "callback_data": "1n1c10Ju3g0"}]
                             ]
                         }
                     }
