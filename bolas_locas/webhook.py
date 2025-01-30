@@ -131,17 +131,22 @@ def handle_jugar(user_id):
     cursor = conn.cursor()
 
     for tablero in tableros:
-        print(f"entre al ciclo y el id_tablero es: {tablero['id_tablero']}")
-    
-        cursor.execute("SELECT * FROM jackpots WHERE id_tablero = %s", (tablero['id_tablero'],))
+        ID_tablero_jackpot= tablero['id_tablero']
+        
+        print(f"entre al ciclo y el id_tablero es: {ID_tablero_jackpot}")
+        
+        cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (ID_tablero_jackpot,))
         jack_premio = cursor.fetchone()
-        print(f"el premio es: {jack_premio['premio_ganador']}")
+        
+        acumulado = jack_premio['premio_ganador'] if jack_premio else 0
+        
+        print(f"el premio es: {acumulado}")
 
-        ##jackpot = "${:,.0f}".format(jack_premio['premio_ganador']).replace(',', '.')
+        acumulado_currency = "${:,.0f}".format(acumulado).replace(',', '.')
         
         precio_bolita = "${:,.0f}".format(tablero['precio_por_bolita']).replace(',', '.')
         botones["inline_keyboard"].append([
-            {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {precio_bolita} - Acumulado: {jackpot}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
+            {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {precio_bolita} - Acumulado: {acumulado_currency}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
         ])
 
 
