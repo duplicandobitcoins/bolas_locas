@@ -131,7 +131,7 @@ def handle_jugar(user_id):
     cursor = conn.cursor()
 
     for tablero in tableros:
-
+        print(f"entre al ciclo y el id_tablero es: {tablero['id_tablero']}")
     
         cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (tablero['id_tablero'],))
         jackpots = cursor.fetchone()
