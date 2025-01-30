@@ -128,6 +128,9 @@ def handle_jugar(user_id):
     botones = {"inline_keyboard": []}
 
     for tablero in tableros:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+    
         cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (tablero['id_tablero'],))
         jackpots = cursor.fetchone()
         cursor.close()
