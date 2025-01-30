@@ -128,9 +128,16 @@ def handle_jugar(user_id):
     botones = {"inline_keyboard": []}
 
     for tablero in tableros:
+        cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (tablero['id_tablero'],))
+        jackpots = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        jackpot = "${:,.0f}".format(jackpots['premio_ganador']).replace(',', '.')
+        
         precio_bolita = "${:,.0f}".format(tablero['precio_por_bolita']).replace(',', '.')
         botones["inline_keyboard"].append([
-            {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {precio_bolita}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
+            {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {precio_bolita} - Acumulado: {jackpot}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
         ])
 
     return JSONResponse(content={
@@ -181,7 +188,7 @@ async def handle_seleccionar_tablero(user_id, rtaTableroID):
         "fulfillmentMessages": [{
             "payload": {
                 "telegram": {
-                    "text": f"TableroID: {tablero['id_tablero']}\nTablero: {tablero['nombre']}\nMáx. Bolitas: {tablero['max_bolitas']}\nPrecio/Bolita: {precio_bolita}\nBolitas disponibles: {disponibles}\nMín. por jugador: {tablero['min_bolitas_por_jugador']}\nMáx. por jugador: {tablero['max_bolitas_por_jugador']}\nJugadores inscritos: {stats['inscritos']}\n\n JackPot: {jackpot}",
+                    "text": f"TableroID: {tablero['id_tablero']}\nTablero: {tablero['nombre']}\nMáx. Bolitas: {tablero['max_bolitas']}\nPrecio/Bolita: {precio_bolita}\nBolitas disponibles: {disponibles}\nMín. por jugador: {tablero['min_bolitas_por_jugador']}\nMáx. por jugador: {tablero['max_bolitas_por_jugador']}\nJugadores inscritos: {stats['inscritos']}\n\n Acumulado: {jackpot}",
                     "reply_markup": {"inline_keyboard": [[{"text": "Comprar Bolitas", "callback_data": f"C0mpr4rB0l1t4s|{id_tablero}"}]]}
                 }
             }
