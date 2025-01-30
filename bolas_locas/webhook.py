@@ -133,7 +133,7 @@ def handle_jugar(user_id):
     for tablero in tableros:
         print(f"entre al ciclo y el id_tablero es: {tablero['id_tablero']}")
     
-        cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (tablero['id_tablero'],))
+        cursor.execute("SELECT * FROM jackpots WHERE id_tablero = %s", (tablero['id_tablero'],))
         jack_premio = cursor.fetchone()
         print(f"el premio es: {jack_premio['premio_ganador']}")
 
@@ -144,8 +144,7 @@ def handle_jugar(user_id):
             {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {precio_bolita} - Acumulado: {jackpot}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
         ])
 
-    cursor.close()
-    conn.close()
+
 
     return JSONResponse(content={
         "fulfillmentMessages": [
@@ -161,7 +160,8 @@ def handle_jugar(user_id):
             }
         ]
     })
-
+    cursor.close()
+    conn.close()
 #########
 
 async def handle_seleccionar_tablero(user_id, rtaTableroID):
@@ -181,7 +181,7 @@ async def handle_seleccionar_tablero(user_id, rtaTableroID):
     
     cursor.execute("SELECT COUNT(DISTINCT user_id) as inscritos, SUM(cantidad_bolitas) as bolitas_compradas FROM jugadores_tableros WHERE id_tablero = %s", (id_tablero,))
     stats = cursor.fetchone()
-    cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (id_tablero,))
+    cursor.execute("SELECT * FROM jackpots WHERE id_tablero = %s", (id_tablero,))
     jackpots = cursor.fetchone()
     
     cursor.close()
