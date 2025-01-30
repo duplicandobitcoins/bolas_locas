@@ -175,8 +175,7 @@ async def handle_seleccionar_tablero(user_id, rtaTableroID):
         "fulfillmentMessages": [{
             "payload": {
                 "telegram": {
-                    "parse_mode": "Markdown"
-                    "text": f"Tablero ID: {tablero['id_tablero']}\nTablero: {tablero['nombre']}\nMáx. Bolitas: {tablero['max_bolitas']}\nPrecio/Bolita: {tablero['precio_por_bolita']}\nBolitas disponibles: {disponibles}\nMín. por jugador: {tablero['min_bolitas_por_jugador']}\nMáx. por jugador: {tablero['max_bolitas_por_jugador']}\nJugadores inscritos: {stats['inscritos']}",
+                    "text": f"TableroID: {tablero['id_tablero']}\nTablero: {tablero['nombre']}\nMáx. Bolitas: {tablero['max_bolitas']}\nPrecio/Bolita: {tablero['precio_por_bolita']}\nBolitas disponibles: {disponibles}\nMín. por jugador: {tablero['min_bolitas_por_jugador']}\nMáx. por jugador: {tablero['max_bolitas_por_jugador']}\nJugadores inscritos: {stats['inscritos']}",
                     "reply_markup": {"inline_keyboard": [[{"text": "Comprar Bolitas", "callback_data": f"C0mpr4rB0l1t4s|{id_tablero}"}]]}
                 }
             }
