@@ -126,15 +126,15 @@ def handle_jugar(user_id):
 
     mensaje = "🎲 *Selecciona un tablero para jugar:*"
     botones = {"inline_keyboard": []}
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
     for tablero in tableros:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+
     
         cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (tablero['id_tablero'],))
         jackpots = cursor.fetchone()
-        cursor.close()
-        conn.close()
         
         jackpot = "${:,.0f}".format(jackpots['premio_ganador']).replace(',', '.')
         
@@ -142,6 +142,9 @@ def handle_jugar(user_id):
         botones["inline_keyboard"].append([
             {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {precio_bolita} - Acumulado: {jackpot}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
         ])
+
+    cursor.close()
+    conn.close()
 
     return JSONResponse(content={
         "fulfillmentMessages": [
