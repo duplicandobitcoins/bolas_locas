@@ -344,7 +344,7 @@ def handle_mi_cuenta(user_id):
         f"👤 *Usuario:* _{usuario['alias']}_\n"
         f"📱 *Número registrado en Nequi:* _{usuario['numero_celular']}_\n"
         f"🤝 *Patrocinador:* _{usuario['sponsor']}_\n\n"
-        f"🤝 *SALDO:* _{saldo_formateado}_\n\n"
+        f"💲 *SALDO:* _{saldo_formateado}_\n\n"
         "🔽 ¿Qué quieres hacer?"
     )
 
@@ -359,8 +359,8 @@ def handle_mi_cuenta(user_id):
                         "reply_markup": {
                             "inline_keyboard": [
                                 [{"text": "🔄 Cambiar número Nequi", "callback_data": "c4mb14r_n3qu1"}],
-                                [{"text": "💰 Recargar saldo", "callback_data": "recargar_saldo"}],
-                                [{"text": "🎮 Jugar", "callback_data": "1n1c10Ju3g0"}]
+                                [{"text": "💲 Recargar saldo", "callback_data": "recargar_saldo"}],
+                                [{"text": "🔮 Jugar", "callback_data": "1n1c10Ju3g0"}]
                             ]
                         }
                     }
