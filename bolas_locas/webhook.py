@@ -134,10 +134,10 @@ def handle_jugar(user_id):
         print(f"entre al ciclo y el id_tablero es: {tablero['id_tablero']}")
     
         cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (tablero['id_tablero'],))
-        jackpots = cursor.fetchone()
-        print(f"el premio es: {jackpots['premio_ganador']}")
+        jack_premio = cursor.fetchone()
+        print(f"el premio es: {jack_premio['premio_ganador']}")
 
-        jackpot = "${:,.0f}".format(jackpots['premio_ganador']).replace(',', '.')
+        ##jackpot = "${:,.0f}".format(jack_premio['premio_ganador']).replace(',', '.')
         
         precio_bolita = "${:,.0f}".format(tablero['precio_por_bolita']).replace(',', '.')
         botones["inline_keyboard"].append([
