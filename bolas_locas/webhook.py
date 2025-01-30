@@ -194,7 +194,10 @@ async def handle_seleccionar_tablero(user_id, rtaTableroID):
     
     disponibles = tablero["max_bolitas"] - (stats["bolitas_compradas"] or 0)
     precio_bolita = "${:,.0f}".format(tablero['precio_por_bolita']).replace(',', '.')
-    jackpot = "${:,.0f}".format(jackpots['premio_ganador']).replace(',', '.')
+
+    premio_ganador = jackpots['premio_ganador'] if jackpots else 0
+
+    jackpot = "${:,.0f}".format(premio_ganador).replace(',', '.')
     
     return JSONResponse(content={
         "fulfillmentMessages": [{
