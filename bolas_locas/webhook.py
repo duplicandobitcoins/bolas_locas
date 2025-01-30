@@ -124,11 +124,11 @@ def handle_jugar(user_id):
     if not tableros:
         return JSONResponse(content={"fulfillmentText": "🚧 No hay tableros disponibles en este momento."})
 
-    precio_bolita = "${:,.0f}".format(tablero['precio_por_bolita']).replace(',', '.')
     mensaje = "🎲 *Selecciona un tablero para jugar:*"
     botones = {"inline_keyboard": []}
 
     for tablero in tableros:
+        precio_bolita = "${:,.0f}".format(tablero['precio_por_bolita']).replace(',', '.')
         botones["inline_keyboard"].append([
             {"text": f"ID: {tablero['id_tablero']} - {tablero['nombre']} - 💰 {precio_bolita}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
         ])
@@ -168,7 +168,7 @@ async def handle_seleccionar_tablero(user_id, rtaTableroID):
     cursor.execute("SELECT COUNT(DISTINCT user_id) as inscritos, SUM(cantidad_bolitas) as bolitas_compradas FROM jugadores_tableros WHERE id_tablero = %s", (id_tablero,))
     stats = cursor.fetchone()
     cursor.execute("SELECT premio_ganador FROM jackpots WHERE id_tablero = %s", (id_tablero,))
-    stats = cursor.fetchone()
+    jackpots = cursor.fetchone()
     
     cursor.close()
     conn.close()
