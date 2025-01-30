@@ -204,7 +204,8 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     cursor.close()
     conn.close()
     
-    costo_total = cantidad * tablero["precio_por_bolita"]
+    costo_total = int(cantidad) * tablero["precio_por_bolita"]
+
     disponibles = tablero["max_bolitas"] - (stats["compradas"] or 0)
     
     if jugador["saldo"] < costo_total:
