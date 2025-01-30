@@ -150,6 +150,9 @@ def handle_jugar(user_id):
 #########
 
 async def handle_seleccionar_tablero(user_id, rtaTableroID):
+    if not rtaTableroID:
+        return JSONResponse(content={"fulfillmentText": "❌ No se recibió el ID del tablero."})
+    
     id_tablero = rtaTableroID.replace("|","")
     print(f"📝 Acción detectada: Tablero Seleccionado {id_tablero}")
     
@@ -254,7 +257,7 @@ async def handle_dialogflow_webhook(request: Request):
 
     if action == "actTableroSelect":
         rtaTableroID = data["queryResult"]["parameters"].get("rtaTableroID")
-        return handle_seleccionar_tablero(user_id, rtaTableroID)
+        return await handle_seleccionar_tablero(user_id, rtaTableroID)
 
 
     return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
