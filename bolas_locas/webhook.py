@@ -129,7 +129,7 @@ def handle_jugar(user_id):
 
     for tablero in tableros:
         botones["inline_keyboard"].append([
-            {"text": f"{tablero['nombre']} - 💰 {tablero['precio_por_bolita']}", "callback_data": f"tablero_{tablero['id_tablero']}"}
+            {"text": f"{tablero['nombre']} - 💰 {tablero['precio_por_bolita']}", "callback_data": f"t4bl3r0s3l|{tablero['id_tablero']}"}
         ])
 
     return JSONResponse(content={
@@ -149,7 +149,10 @@ def handle_jugar(user_id):
 
 #########
 
-async def handle_seleccionar_tablero(user_id, id_tablero):
+async def handle_seleccionar_tablero(user_id, rtaTableroID):
+    id_tablero = rtaTableroID.replace("|","")
+    print(f"📝 Acción detectada: Tablero Seleccionado {id_tablero}")
+    
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM tableros WHERE id_tablero = %s", (id_tablero,))
@@ -248,6 +251,10 @@ async def handle_dialogflow_webhook(request: Request):
 
     if action == "actRegistrarUsuario":
         return handle_registrar_usuario(user_id, data)
+
+    if action == "actTableroSelect":
+        return handle_seleccionar_tablero(user_id, rtaTableroID)
+
 
     return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
 
