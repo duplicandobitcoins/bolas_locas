@@ -176,13 +176,21 @@ async def handle_seleccionar_tablero(user_id, rtaTableroID):
             "payload": {
                 "telegram": {
                     "text": f"Tablero: {tablero['nombre']}\nMáx. Bolitas: {tablero['max_bolitas']}\nPrecio/Bolita: {tablero['precio_por_bolita']}\nBolitas disponibles: {disponibles}\nMín. por jugador: {tablero['min_bolitas_por_jugador']}\nMáx. por jugador: {tablero['max_bolitas_por_jugador']}\nJugadores inscritos: {stats['inscritos']}",
-                    "reply_markup": {"inline_keyboard": [[{"text": "Comprar Bolitas", "callback_data": f"ComprarBolitas_{id_tablero}"}]]}
+                    "reply_markup": {"inline_keyboard": [[{"text": "Comprar Bolitas", "callback_data": f"C0mpr4rB0l1t4s|{id_tablero}"}]]}
                 }
             }
         }]
     })
 
-async def handle_comprar_bolitas(user_id, id_tablero, cantidad):
+async def handle_comprar_bolitas(user_id, id_tablero, rtaCantBolitas):
+    if not rtaTableroID:
+        return JSONResponse(content={"fulfillmentText": "❌ No se recibió el ID del tablero."})
+    
+    id_tablero = rtaTableroID.replace("|","")
+    cantidad = rtaCantBolitas
+    print(f"📝 Acción detectada: Comora {cantidad} en el tablero {id_tablero}")
+    
+    
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT saldo FROM jugadores WHERE user_id = %s", (user_id,))
@@ -258,6 +266,11 @@ async def handle_dialogflow_webhook(request: Request):
     if action == "actTableroSelect":
         rtaTableroID = data["queryResult"]["parameters"].get("rtaTableroID")
         return await handle_seleccionar_tablero(user_id, rtaTableroID)
+    
+    if action == "actComprarBolitas":
+        rtaCantBolitas = data["queryResult"]["parameters"].get("rtaCantBolitas")
+        rtaTableroID = data["queryResult"]["parameters"].get("rtaTableroID")
+        return await handle_seleccionar_tablero(user_id, rtaTableroID, rtaCantBolitas)
 
 
     return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
