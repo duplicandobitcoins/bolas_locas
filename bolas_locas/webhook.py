@@ -253,6 +253,7 @@ async def handle_dialogflow_webhook(request: Request):
         return handle_registrar_usuario(user_id, data)
 
     if action == "actTableroSelect":
+        rtaTableroID = data["queryResult"]["parameters"].get("rtaTableroID")
         return handle_seleccionar_tablero(user_id, rtaTableroID)
 
 
