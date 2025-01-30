@@ -182,7 +182,7 @@ async def handle_seleccionar_tablero(user_id, rtaTableroID):
         }]
     })
 
-async def handle_comprar_bolitas(user_id, id_tablero, rtaCantBolitas):
+async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     if not rtaTableroID:
         return JSONResponse(content={"fulfillmentText": "❌ No se recibió el ID del tablero."})
     
