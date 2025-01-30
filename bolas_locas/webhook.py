@@ -149,16 +149,16 @@ def handle_jugar(user_id):
 
 #########
 
-async def handle_seleccionar_tablero(user_id, tablero_id):
+async def handle_seleccionar_tablero(user_id, id_tablero):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM tableros WHERE id_tablero = %s", (tablero_id,))
+    cursor.execute("SELECT * FROM tableros WHERE id_tablero = %s", (id_tablero,))
     tablero = cursor.fetchone()
     
     if not tablero:
         return JSONResponse(content={"fulfillmentText": "❌ Tablero no encontrado."})
     
-    cursor.execute("SELECT COUNT(*) as inscritos, SUM(cantidad_bolitas) as bolitas_compradas FROM jugadores_tableros WHERE id_tablero = %s", (tablero_id,))
+    cursor.execute("SELECT COUNT(*) as inscritos, SUM(cantidad_bolitas) as bolitas_compradas FROM jugadores_tableros WHERE id_tablero = %s", (id_tablero,))
     stats = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -170,22 +170,22 @@ async def handle_seleccionar_tablero(user_id, tablero_id):
             "payload": {
                 "telegram": {
                     "text": f"Tablero: {tablero['nombre']}\nMáx. Bolitas: {tablero['max_bolitas']}\nPrecio/Bolita: {tablero['precio_por_bolita']}\nBolitas disponibles: {disponibles}\nMín. por jugador: {tablero['min_bolitas_por_jugador']}\nMáx. por jugador: {tablero['max_bolitas_por_jugador']}\nJugadores inscritos: {stats['inscritos']}",
-                    "reply_markup": {"inline_keyboard": [[{"text": "Comprar Bolitas", "callback_data": f"ComprarBolitas_{tablero_id}"}]]}
+                    "reply_markup": {"inline_keyboard": [[{"text": "Comprar Bolitas", "callback_data": f"ComprarBolitas_{id_tablero}"}]]}
                 }
             }
         }]
     })
 
-async def handle_comprar_bolitas(user_id, tablero_id, cantidad):
+async def handle_comprar_bolitas(user_id, id_tablero, cantidad):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT saldo FROM jugadores WHERE user_id = %s", (user_id,))
     jugador = cursor.fetchone()
     
-    cursor.execute("SELECT * FROM tableros WHERE id_tablero = %s", (tablero_id,))
+    cursor.execute("SELECT * FROM tableros WHERE id_tablero = %s", (id_tablero,))
     tablero = cursor.fetchone()
     
-    cursor.execute("SELECT SUM(cantidad_bolitas) as compradas FROM jugadores_tableros WHERE id_tablero = %s", (tablero_id,))
+    cursor.execute("SELECT SUM(cantidad_bolitas) as compradas FROM jugadores_tableros WHERE id_tablero = %s", (id_tablero,))
     stats = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -203,8 +203,8 @@ async def handle_comprar_bolitas(user_id, tablero_id, cantidad):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("UPDATE jugadores SET saldo = saldo - %s WHERE user_id = %s", (costo_total, user_id))
-    cursor.execute("INSERT INTO jugadores_tableros (numero_celular, id_tablero, cantidad_bolitas, monto_pagado) VALUES (%s, %s, %s, %s)", (user_id, tablero_id, cantidad, costo_total))
-    cursor.execute("UPDATE jackpots SET monto_acumulado = monto_acumulado + %s WHERE id_tablero = %s", (costo_total, tablero_id))
+    cursor.execute("INSERT INTO jugadores_tableros (numero_celular, id_tablero, cantidad_bolitas, monto_pagado) VALUES (%s, %s, %s, %s)", (user_id, id_tablero, cantidad, costo_total))
+    cursor.execute("UPDATE jackpots SET monto_acumulado = monto_acumulado + %s WHERE id_tablero = %s", (costo_total, id_tablero))
     conn.commit()
     cursor.close()
     conn.close()
