@@ -276,7 +276,7 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
         cursor.execute("UPDATE jackpots SET ganancia_bruta =  %s, premio_sponsor = %s, premio_ganador = %s WHERE id_tablero = %s", (monto_casa, monto_sponsor, monto_ganador, id_tablero))
     
     else:
-        cursor.execute("INSERT INTO jackpots (id_tablero, acum_bolitas, monto_acumulado, ganancia_bruta, premio_sponsor, premio_ganador) VALUES (%s, %s, %s, %s, %s, %s) (id_tablero, cantidad, costo_total, monto_casa, monto_sponsor, monto_ganador, id_tablero))
+        cursor.execute("INSERT INTO jackpots (id_tablero, acum_bolitas, monto_acumulado, ganancia_bruta, premio_sponsor, premio_ganador) VALUES (%s, %s, %s, %s, %s, %s) (id_tablero, cantidad, costo_total, monto_casa, monto_sponsor, monto_ganador))
     
     conn.commit()
     cursor.close()
