@@ -237,22 +237,30 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
      # 🔹 NUEVO: Obtener el monto actual del jackpot del tablero
     cursor.execute("SELECT monto_acumulado FROM jackpots WHERE id_tablero = %s", (id_tablero,))
     jackpot = cursor.fetchone()
+
+    cursor.execute("SELECT * FROM configuracion_pagos WHERE id_config = %s", (1,))
+    porcentaje_pagos = cursor.fetchone()
+    
     
     cursor.close()
     conn.close()
     
     costo_total = int(cantidad) * tablero["precio_por_bolita"]
-    disponibles = tablero["max_bolitas"] - (stats["compradas"] or 0)
+    ## disponibles = tablero["max_bolitas"] - (stats["compradas"] or 0)
     bolitas_compradas_jugador = jugador_stats["compradas_por_jugador"] or 0
     bolitas_totales_despues_compra = bolitas_compradas_jugador + int(cantidad)
+    monto_casa = costo_total * porcentaje_pagos["porcentaje_casa"]
+    monto_sponsor = costo_total * porcentaje_pagos["porcentaje_sponsor"]
+    monto_ganador = costo_total * porcentaje_pagos["porcentaje_ganador"]
+    
 
     
     if jugador["saldo"] < costo_total:
         return JSONResponse(content={"fulfillmentText": "❌ No tienes saldo suficiente."})
     if cantidad < tablero["min_bolitas_por_jugador"] or cantidad > tablero["max_bolitas_por_jugador"]:
         return JSONResponse(content={"fulfillmentText": "❌ Cantidad de bolitas fuera del rango permitido."})
-    if cantidad > disponibles:
-        return JSONResponse(content={"fulfillmentText": "❌ No hay suficientes bolitas disponibles."})
+    '''if cantidad > disponibles:
+        return JSONResponse(content={"fulfillmentText": "❌ No hay suficientes bolitas disponibles."})'''
     if bolitas_totales_despues_compra > tablero["max_bolitas_por_jugador"]:
         return JSONResponse(content={"fulfillmentText": f"❌ No puedes comprar más bolitas. Ya tienes {bolitas_compradas_jugador} y el límite es {tablero['max_bolitas_por_jugador']}."})
 
@@ -264,9 +272,12 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     cursor.execute("INSERT INTO jugadores_tableros (user_id, id_tablero, cantidad_bolitas, monto_pagado) VALUES (%s, %s, %s, %s)", (user_id, id_tablero, cantidad, costo_total))
     if jackpot:
         cursor.execute("UPDATE jackpots SET monto_acumulado = monto_acumulado + %s WHERE id_tablero = %s", (costo_total, id_tablero))
+        cursor.execute("UPDATE jackpots SET acum_bolitas = acum_bolitas + %s WHERE id_tablero = %s", (cantidad, id_tablero))
+        cursor.execute("UPDATE jackpots SET ganancia_bruta =  %s, premio_sponsor = %s, premio_ganador = %s WHERE id_tablero = %s", (monto_casa, monto_sponsor, monto_ganador, id_tablero))
+    
     else:
-        cursor.execute("INSERT INTO jackpots (id_tablero, monto_acumulado) VALUES (%s, %s)", (id_tablero, costo_total))
-
+        cursor.execute("INSERT INTO jackpots (id_tablero, acum_bolitas, monto_acumulado, ganancia_bruta, premio_sponsor, premio_ganador) VALUES (%s, %s, %s, %s, %s, %s) (id_tablero, cantidad, costo_total, monto_casa, monto_sponsor, monto_ganador, id_tablero))
+    
     conn.commit()
     cursor.close()
     conn.close()
