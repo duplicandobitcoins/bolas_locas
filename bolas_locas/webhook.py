@@ -249,9 +249,9 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     ## disponibles = tablero["max_bolitas"] - (stats["compradas"] or 0)
     bolitas_compradas_jugador = jugador_stats["compradas_por_jugador"] or 0
     bolitas_totales_despues_compra = bolitas_compradas_jugador + int(cantidad)
-    monto_casa = (jackpot['monto_acumulado'] + costo_total) * porcentaje_pagos["porcentaje_casa"] if jackpot else 0
-    monto_sponsor = (jackpot['monto_acumulado'] + costo_total) * porcentaje_pagos["porcentaje_sponsor"] if jackpot else 0
-    monto_ganador = (jackpot['monto_acumulado'] + costo_total) * porcentaje_pagos["porcentaje_ganador"] if jackpot else 0
+    monto_casa = (jackpot['monto_acumulado'] + costo_total) * porcentaje_pagos["porcentaje_casa"] if jackpot else (costo_total * porcentaje_pagos["porcentaje_casa"])
+    monto_sponsor = (jackpot['monto_acumulado'] + costo_total) * porcentaje_pagos["porcentaje_sponsor"] if jackpot else  (costo_total * porcentaje_pagos["porcentaje_sponsor"])
+    monto_ganador = (jackpot['monto_acumulado'] + costo_total) * porcentaje_pagos["porcentaje_ganador"] if jackpot else (costo_total * porcentaje_pagos["porcentaje_ganador"])
     
 
     
