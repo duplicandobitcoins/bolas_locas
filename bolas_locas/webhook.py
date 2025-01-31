@@ -250,8 +250,8 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     bolitas_compradas_jugador = jugador_stats["compradas_por_jugador"] or 0
     bolitas_totales_despues_compra = bolitas_compradas_jugador + int(cantidad)
     monto_casa = jackpot['monto_acumulado'] * porcentaje_pagos["porcentaje_casa"]
-    monto_sponsor = jackpot['monto_acumulado * porcentaje_pagos["porcentaje_sponsor"]
-    monto_ganador = jackpot['monto_acumulado * porcentaje_pagos["porcentaje_ganador"]
+    monto_sponsor = jackpot['monto_acumulado] * porcentaje_pagos["porcentaje_sponsor"]
+    monto_ganador = jackpot['monto_acumulado] * porcentaje_pagos["porcentaje_ganador"]
     
 
     
