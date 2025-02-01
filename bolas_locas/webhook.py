@@ -330,8 +330,8 @@ def handle_mis_tableros_abiertos(user_id):
         mensaje += (
             f"🔹 *ID Tablero:* {tablero['id_tablero']}\n"
             f"📅 *Fecha de creación:* {fecha_creacion}\n"
-            f"🎱 *Bolitas compradas por ti:* {bolitas_compradas}\n"
-            f"🎱 *Bolitas totales en el tablero:* {bolitas_totales}\n"
+            f"🔮 *Bolitas compradas por ti:* {bolitas_compradas}\n"
+            f"💠 *Bolitas totales en el tablero:* {bolitas_totales}\n"
             f"💰 *Acumulado del tablero:* {acumulado}\n\n"
         )
 
@@ -349,7 +349,60 @@ def handle_mis_tableros_abiertos(user_id):
         ]
     })
 
-#########
+######### 🟡🟡🟡 Fin Funcion Tableros Abiertos
+
+# ✅ Función para manejar "MisTablerosJugados"
+def handle_mis_tableros_jugados(user_id, rtaMes, rtaAnio):
+    print("📌 Acción detectada: MisTablerosJugados")
+
+    # Validar que los parámetros de mes y año estén presentes
+    if not rtaMes or not rtaAnio:
+        return JSONResponse(content={"fulfillmentText": "❌ Faltan parámetros obligatorios (mes o año)."})
+
+    # Convertir el mes y año a enteros
+    try:
+        mes = int(rtaMes)
+        anio = int(rtaAnio)
+    except ValueError:
+        return JSONResponse(content={"fulfillmentText": "❌ El mes y el año deben ser números válidos."})
+
+    # Validar que el mes esté en el rango correcto (1-12)
+    if mes < 1 or mes > 12:
+        return JSONResponse(content={"fulfillmentText": "❌ El mes debe estar entre 1 y 12."})
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # ✅ Obtener los tableros en los que el usuario ha participado en el mes y año especificados
+    cursor.execute("""
+        SELECT DISTINCT 
+            jt.id_tablero
+        FROM 
+            jugadores_tableros jt
+        JOIN 
+            tableros t ON jt.id_tablero = t.id_tablero
+        WHERE 
+            jt.user_id = %s
+            AND YEAR(t.fecha_creacion) = %s
+            AND MONTH(t.fecha_creacion) = %s
+            AND t.estado != 'abierto'
+    """, (user_id, anio, mes))
+
+    tableros = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    if not tableros:
+        return JSONResponse(content={"fulfillmentText": f"📭 No participaste en ningún tablero en {mes}/{anio}."})
+
+    # ✅ Construir la lista de IDs de tableros separados por comas
+    lista_tableros = ", ".join(str(tablero["id_tablero"]) for tablero in tableros)
+
+    return JSONResponse(content={
+        "fulfillmentText": f"📋 Tableros en los que participaste en {mes}/{anio}: {lista_tableros}"
+    })
+
+##### 🟡🟡🟡 Fin Función Mis Tableros Jugados
 
 
 
@@ -397,6 +450,12 @@ async def handle_dialogflow_webhook(request: Request):
 
     if action == "actMisTabAbiertos":
         return handle_mis_tableros_abiertos(user_id)
+
+    # ✅ Nuevo action para MisTablerosJugados
+    if action == "actMisTabJugados":
+        rtaMes = data["queryResult"]["parameters"].get("rtaMes")
+        rtaAnio = data["queryResult"]["parameters"].get("rtaAnio")
+        return handle_mis_tableros_jugados(user_id, rtaMes, rtaAnio)
 
     return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
 
