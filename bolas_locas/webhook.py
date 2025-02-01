@@ -404,6 +404,79 @@ def handle_mis_tableros_jugados(user_id, rtaMes, rtaAnio):
 
 ##### 🟡🟡🟡 Fin Función Mis Tableros Jugados
 
+# ✅ Función para manejar "ConsultarTablero"
+def handle_consulta_tablero(rtaIDTablero):
+    print("📌 Acción detectada: ConsultarTablero")
+
+    # Validar que el parámetro rtaIDTablero esté presente
+    if not rtaIDTablero:
+        return JSONResponse(content={"fulfillmentText": "❌ Faltan parámetros obligatorios (ID del tablero)."})
+
+    # Convertir el ID del tablero a entero
+    try:
+        id_tablero = int(rtaIDTablero)
+    except ValueError:
+        return JSONResponse(content={"fulfillmentText": "❌ El ID del tablero debe ser un número válido."})
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # ✅ Obtener los datos de la tabla jackpots para el ID de tablero especificado
+    cursor.execute("""
+        SELECT 
+            id_tablero,
+            monto_acumulado,
+            alias_ganador,
+            sponsor_ganador,
+            premio_ganador,
+            premio_sponsor,
+            estado,
+            link_soporte,
+            fecha_pago,
+            acum_bolitas
+        FROM 
+            jackpots
+        WHERE 
+            id_tablero = %s
+    """, (id_tablero,))
+
+    jackpot = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not jackpot:
+        return JSONResponse(content={"fulfillmentText": f"❌ No se encontró información para el tablero con ID {id_tablero}."})
+
+    # ✅ Construir el mensaje con los datos del jackpot
+    mensaje = (
+        f"📋 *Información del Tablero ID {jackpot['id_tablero']}:*\n\n"
+        f"💰 *Monto Acumulado:* ${jackpot['monto_acumulado']:,.2f}\n"
+        f"🎱 *Bolitas Jugadas:* {jackpot['acum_bolitas']}"
+        f"🏆 *Usuario Ganador:* {jackpot['alias_ganador'] or 'N/A'}\n"
+        f"🤝 *Sponsor del Ganador:* {jackpot['sponsor_ganador'] or 'N/A'}\n"
+        f"🎁 *Premio del Ganador:* ${jackpot['premio_ganador']:,.2f}\n"
+        f"🎁 *Premio del Sponsor:* ${jackpot['premio_sponsor']:,.2f}\n\n"
+        f"📊 *Estado del tablero:* {jackpot['estado'].capitalize()}\n"
+        f"🔗 *Link Soporte pago:* {jackpot['link_soporte'] or 'N/A'}\n"
+        f"📅 *Fecha de Pago:* {jackpot['fecha_pago'].strftime('%Y-%m-%d %H:%M:%S') if jackpot['fecha_pago'] else 'N/A'}\n"
+        
+    )
+
+    return JSONResponse(content={
+        "fulfillmentMessages": [
+            {
+                "platform": "TELEGRAM",
+                "payload": {
+                    "telegram": {
+                        "parse_mode": "Markdown",
+                        "text": mensaje
+                    }
+                }
+            }
+        ]
+    })
+
+##### 🟡🟡🟡 Fin Función Consultar Tablero
 
 
 # ✅ Webhook de Dialogflow
@@ -456,6 +529,12 @@ async def handle_dialogflow_webhook(request: Request):
         rtaMes = data["queryResult"]["parameters"].get("rtaMes")
         rtaAnio = data["queryResult"]["parameters"].get("rtaAnio")
         return handle_mis_tableros_jugados(user_id, rtaMes, rtaAnio)
+
+    
+    # ✅ Nuevo action para ConsultarTablero
+    if action == "actConsultaTablero":
+        rtaIDTablero = data["queryResult"]["parameters"].get("rtaIDTablero")
+        return handle_consulta_tablero(rtaIDTablero)
 
     return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
 
