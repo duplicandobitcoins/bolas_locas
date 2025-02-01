@@ -478,6 +478,81 @@ def handle_consulta_tablero(rtaIDTablero):
 
 ##### 🟡🟡🟡 Fin Función Consultar Tablero
 
+# ✅ Función para manejar "MisTablerosGanados"
+def handle_mis_tableros_ganados(user_id):
+    print("📌 Acción detectada: MisTablerosGanados")
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # ✅ Obtener el alias del usuario
+    cursor.execute("SELECT alias FROM jugadores WHERE user_id = %s", (user_id,))
+    usuario = cursor.fetchone()
+
+    if not usuario:
+        return JSONResponse(content={"fulfillmentText": "❌ No estás registrado en el sistema."})
+
+    alias_usuario = usuario["alias"]
+
+    # ✅ Obtener los tableros en los que el usuario aparece como ganador o sponsor
+    cursor.execute("""
+        SELECT 
+            id_tablero,
+            monto_acumulado,
+            alias_ganador,
+            sponsor_ganador,
+            premio_ganador,
+            premio_sponsor,
+            estado,
+            link_soporte,
+            fecha_pago,
+            acum_bolitas
+        FROM 
+            jackpots
+        WHERE 
+            alias_ganador = %s OR sponsor_ganador = %s
+    """, (alias_usuario, alias_usuario))
+
+    tableros = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    if not tableros:
+        return JSONResponse(content={"fulfillmentText": "📭 No has ganado ni has sido sponsor en ningún tablero ganador."})
+
+    # ✅ Construir el mensaje con los tableros
+    mensaje = "🏆 *Tus Tableros Ganados o con ganacias como Sponsor:*\n\n"
+    for tablero in tableros:
+        mensaje += (
+            f"🔹 *ID Tablero:* {tablero['id_tablero']}\n"
+            f"💰 *Monto Acumulado:* ${tablero['monto_acumulado']:,.2f}\n"
+            f"🔮 *Bolitas Acumuladas:* {tablero['acum_bolitas']}\n"
+            f"🏆 *Alias del Ganador:* {tablero['alias_ganador'] or 'N/A'}\n"
+            f"🤝 *Sponsor del Ganador:* {tablero['sponsor_ganador'] or 'N/A'}\n"
+            f"🎁 *Premio del Ganador:* ${tablero['premio_ganador']:,.2f}\n"
+            f"🎁 *Premio del Sponsor:* ${tablero['premio_sponsor']:,.2f}\n"
+            f"📊 *Estado:* {tablero['estado'].capitalize()}\n"
+            f"🔗 *Link de Soporte:* {tablero['link_soporte'] or 'N/A'}\n"
+            f"📅 *Fecha de Pago:* {tablero['fecha_pago'].strftime('%Y-%m-%d %H:%M:%S') if tablero['fecha_pago'] else 'N/A'}\n\n"
+            
+        )
+
+    return JSONResponse(content={
+        "fulfillmentMessages": [
+            {
+                "platform": "TELEGRAM",
+                "payload": {
+                    "telegram": {
+                        "parse_mode": "Markdown",
+                        "text": mensaje
+                    }
+                }
+            }
+        ]
+    })
+
+##### 🟡🟡🟡 Fin Función Mis Tableros Ganados
+
 
 # ✅ Webhook de Dialogflow
 @router.post("/webhook")
