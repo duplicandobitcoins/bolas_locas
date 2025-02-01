@@ -450,12 +450,12 @@ def handle_consulta_tablero(rtaIDTablero):
     # ✅ Construir el mensaje con los datos del jackpot
     mensaje = (
         f"📋 *Información del Tablero ID {jackpot['id_tablero']}:*\n\n"
-        f"💰 *Monto Acumulado:* ${jackpot['monto_acumulado']:,.2f}\n"
+        f"💰 *Monto Acumulado:* ${jackpot['monto_acumulado']:,.0f}\n"
         f"🔮 *Bolitas Jugadas:* {jackpot['acum_bolitas']}\n"
         f"🏆 *Usuario Ganador:* {jackpot['alias_ganador'] or 'N/A'}\n"
         f"🤝 *Sponsor del Ganador:* {jackpot['sponsor_ganador'] or 'N/A'}\n"
-        f"🎁 *Premio del Ganador:* ${jackpot['premio_ganador']:,.2f}\n"
-        f"🎁 *Premio del Sponsor:* ${jackpot['premio_sponsor']:,.2f}\n\n"
+        f"🎁 *Premio del Ganador:* ${jackpot['premio_ganador']:,.0f}\n"
+        f"🎁 *Premio del Sponsor:* ${jackpot['premio_sponsor']:,.0f}\n\n"
         f"📊 *Estado del tablero:* {jackpot['estado'].capitalize()}\n"
         f"🔗 *Link Soporte pago:* {jackpot['link_soporte'] or 'N/A'}\n"
         f"📅 *Fecha de Pago:* {jackpot['fecha_pago'].strftime('%Y-%m-%d %H:%M:%S') if jackpot['fecha_pago'] else 'N/A'}\n"
