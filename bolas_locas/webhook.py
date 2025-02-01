@@ -284,6 +284,69 @@ async def handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas):
     
     return JSONResponse(content={"fulfillmentText": "✅ Compra realizada con éxito."})
 
+# ✅ Función para manejar "MisTablerosAbiertos"
+def handle_mis_tableros_abiertos(user_id):
+    print("📌 Acción detectada: MisTablerosAbiertos")
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # ✅ Obtener los tableros en los que el usuario está inscrito y que están activos
+    cursor.execute("""
+        SELECT 
+            jt.id_tablero,
+            t.fecha_creacion,
+            SUM(jt.cantidad_bolitas) AS bolitas_compradas_usuario,
+            j.acum_bolitas AS bolitas_totales_tablero,
+            j.premio_ganador AS acumulado_tablero
+        FROM 
+            jugadores_tableros jt
+        JOIN 
+            tableros t ON jt.id_tablero = t.id_tablero
+        LEFT JOIN 
+            jackpots j ON jt.id_tablero = j.id_tablero
+        WHERE 
+            jt.user_id = %s AND t.estado = 'abierto'
+        GROUP BY 
+            jt.id_tablero
+    """, (user_id,))
+
+    tableros = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    if not tableros:
+        return JSONResponse(content={"fulfillmentText": "📭 No estás inscrito en ningún tablero abierto en este momento."})
+
+    # ✅ Construir el mensaje con los tableros
+    mensaje = "📋 *Mis Tableros Abiertos:*\n\n"
+    for tablero in tableros:
+        fecha_creacion = tablero["fecha_creacion"].strftime("%Y-%m-%d %H:%M:%S")
+        bolitas_compradas = tablero["bolitas_compradas_usuario"]
+        bolitas_totales = tablero["bolitas_totales_tablero"]
+        acumulado = "${:,.0f}".format(tablero["acumulado_tablero"]).replace(',', '.')
+
+        mensaje += (
+            f"🔹 *ID Tablero:* {tablero['id_tablero']}\n"
+            f"📅 *Fecha de creación:* {fecha_creacion}\n"
+            f"🎱 *Bolitas compradas por ti:* {bolitas_compradas}\n"
+            f"🎱 *Bolitas totales en el tablero:* {bolitas_totales}\n"
+            f"💰 *Acumulado del tablero:* {acumulado}\n\n"
+        )
+
+    return JSONResponse(content={
+        "fulfillmentMessages": [
+            {
+                "platform": "TELEGRAM",
+                "payload": {
+                    "telegram": {
+                        "parse_mode": "Markdown",
+                        "text": mensaje
+                    }
+                }
+            }
+        ]
+    })
 
 #########
 
@@ -331,6 +394,8 @@ async def handle_dialogflow_webhook(request: Request):
         rtaTableroID = data["queryResult"]["parameters"].get("rtaTableroID")
         return await handle_comprar_bolitas(user_id, rtaTableroID, rtaCantBolitas)
 
+    if action == "actMisTabAbiertos":
+        return handle_mis_tableros_abiertos(user_id)
 
     return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
 
