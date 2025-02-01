@@ -291,14 +291,15 @@ def handle_mis_tableros_abiertos(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # ✅ Obtener los tableros en los que el usuario está inscrito y que están activos
+        
+    # ✅ Consulta corregida para cumplir con sql_mode=only_full_group_by
     cursor.execute("""
         SELECT 
             jt.id_tablero,
-            t.fecha_creacion,
+            MAX(t.fecha_creacion) AS fecha_creacion,  # Usamos MAX para cumplir con only_full_group_by
             SUM(jt.cantidad_bolitas) AS bolitas_compradas_usuario,
-            j.acum_bolitas AS bolitas_totales_tablero,
-            j.premio_ganador AS acumulado_tablero
+            MAX(j.acum_bolitas) AS bolitas_totales_tablero,  # Usamos MAX para cumplir con only_full_group_by
+            MAX(j.premio_ganador) AS acumulado_tablero  # Usamos MAX para cumplir con only_full_group_by
         FROM 
             jugadores_tableros jt
         JOIN 
@@ -310,7 +311,7 @@ def handle_mis_tableros_abiertos(user_id):
         GROUP BY 
             jt.id_tablero
     """, (user_id,))
-
+    
     tableros = cursor.fetchall()
     cursor.close()
     conn.close()
