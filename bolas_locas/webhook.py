@@ -399,7 +399,7 @@ def handle_mis_tableros_jugados(user_id, rtaMes, rtaAnio):
     lista_tableros = ", ".join(str(tablero["id_tablero"]) for tablero in tableros)
 
     return JSONResponse(content={
-        "fulfillmentText": f"📋 Tableros en los que participaste en {mes}/{anio}: {lista_tableros}"
+        "fulfillmentText": f"📋 ID de los Tableros en los que participaste en {mes}/{anio}:\n\n {lista_tableros}"
     })
 
 ##### 🟡🟡🟡 Fin Función Mis Tableros Jugados
