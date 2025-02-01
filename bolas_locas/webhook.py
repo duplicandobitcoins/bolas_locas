@@ -451,7 +451,7 @@ def handle_consulta_tablero(rtaIDTablero):
     mensaje = (
         f"📋 *Información del Tablero ID {jackpot['id_tablero']}:*\n\n"
         f"💰 *Monto Acumulado:* ${jackpot['monto_acumulado']:,.2f}\n"
-        f"🎱 *Bolitas Jugadas:* {jackpot['acum_bolitas']}"
+        f"🔮 *Bolitas Jugadas:* {jackpot['acum_bolitas']}\n"
         f"🏆 *Usuario Ganador:* {jackpot['alias_ganador'] or 'N/A'}\n"
         f"🤝 *Sponsor del Ganador:* {jackpot['sponsor_ganador'] or 'N/A'}\n"
         f"🎁 *Premio del Ganador:* ${jackpot['premio_ganador']:,.2f}\n"
