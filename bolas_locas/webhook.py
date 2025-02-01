@@ -611,6 +611,11 @@ async def handle_dialogflow_webhook(request: Request):
         rtaIDTablero = data["queryResult"]["parameters"].get("rtaIDTablero")
         return handle_consulta_tablero(rtaIDTablero)
 
+    
+    # ✅ Nuevo action para MisTablerosGanados
+    if action == "actMisTabGanados":
+        return handle_mis_tableros_ganados(user_id)
+
     return JSONResponse(content={"fulfillmentText": "⚠️ Acción no reconocida."})
 
 # ✅ Función para manejar "MiCuenta"
