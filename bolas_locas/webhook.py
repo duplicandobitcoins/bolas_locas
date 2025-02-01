@@ -525,12 +525,12 @@ def handle_mis_tableros_ganados(user_id):
     for tablero in tableros:
         mensaje += (
             f"🔹 *ID Tablero:* {tablero['id_tablero']}\n"
-            f"💰 *Monto Acumulado:* ${tablero['monto_acumulado']:,.2f}\n"
+            f"💰 *Monto Acumulado:* ${tablero['monto_acumulado']:,.0f}\n"
             f"🔮 *Bolitas Acumuladas:* {tablero['acum_bolitas']}\n"
             f"🏆 *Alias del Ganador:* {tablero['alias_ganador'] or 'N/A'}\n"
             f"🤝 *Sponsor del Ganador:* {tablero['sponsor_ganador'] or 'N/A'}\n"
-            f"🎁 *Premio del Ganador:* ${tablero['premio_ganador']:,.2f}\n"
-            f"🎁 *Premio del Sponsor:* ${tablero['premio_sponsor']:,.2f}\n"
+            f"🎁 *Premio del Ganador:* ${tablero['premio_ganador']:,.0f}\n"
+            f"🎁 *Premio del Sponsor:* ${tablero['premio_sponsor']:,.0f}\n"
             f"📊 *Estado:* {tablero['estado'].capitalize()}\n"
             f"🔗 *Link de Soporte:* {tablero['link_soporte'] or 'N/A'}\n"
             f"📅 *Fecha de Pago:* {tablero['fecha_pago'].strftime('%Y-%m-%d %H:%M:%S') if tablero['fecha_pago'] else 'N/A'}\n\n"
