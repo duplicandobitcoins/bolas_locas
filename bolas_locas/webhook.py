@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 import mysql.connector
 import re  # Para validaciones
 from config import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+from decimal import Decimal
 
 router = APIRouter()
 
