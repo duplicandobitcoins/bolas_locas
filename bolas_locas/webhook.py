@@ -687,4 +687,42 @@ def handle_cambiar_nequi(user_id, rtaNuevoNequi):
 
     return JSONResponse(content={"fulfillmentText": "✅ Número de Nequi actualizado correctamente."})
 
+# ✅ Endpoint para obtener los tableros abiertos
+@router.get("/tableros_abiertos")
+def get_tableros_abiertos():
+    print("📢 Solicitando tableros abiertos...")
+    tableros = get_open_tableros()
+    
+    if not tableros:
+        return JSONResponse(content={"message": "No hay tableros abiertos."}, status_code=404)
+
+    return JSONResponse(content=tableros)
+
+# ✅ Endpoint para obtener jugadores de un tablero específico
+@router.get("/tablero/{tablero_id}/jugadores")
+def get_jugadores_tablero(tablero_id: int):
+    print(f"📢 Solicitando jugadores del tablero {tablero_id}...")
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT j.alias, jt.color, SUM(jt.cantidad_bolitas) AS total_bolitas
+        FROM jugadores_tableros jt
+        JOIN jugadores j ON jt.jugador_id = j.numero_celular
+        WHERE jt.tablero_id = %s
+        GROUP BY j.alias, jt.color
+    """
+    
+    cursor.execute(query, (tablero_id,))
+    jugadores = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    if not jugadores:
+        return JSONResponse(content={"message": "No hay jugadores en este tablero."}, status_code=404)
+
+    return JSONResponse(content=jugadores)
+
+
     
