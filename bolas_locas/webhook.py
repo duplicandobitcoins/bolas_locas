@@ -725,11 +725,11 @@ def get_jugadores_tablero(tablero_id: int):
 
     try:
         query = """
-            SELECT j.user_id, j.alias, j.sponsor, jt.color, SUM(jt.cantidad_bolitas) AS total_bolitas
+            SELECT j.user_id, j.alias, j.sponsor, SUM(jt.cantidad_bolitas) AS total_bolitas
             FROM jugadores_tableros jt
             JOIN jugadores j ON jt.user_id = j.user_id
             WHERE jt.id_tablero = %s
-            GROUP BY j.user_id, j.alias, j.sponsor, jt.color
+            GROUP BY j.user_id, j.alias, j.sponsor
         """
         
         cursor.execute(query, (tablero_id,))
