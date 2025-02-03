@@ -97,6 +97,12 @@ def get_open_tableros():
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT id_tablero, nombre, precio_por_bolita FROM tableros WHERE estado = 'abierto'")
     tableros = cursor.fetchall()
+
+  # Convertir Decimal a float en los valores necesarios
+    for tablero in tableros:
+        if isinstance(tablero["precio_por_bolita"], Decimal):
+            tablero["precio_por_bolita"] = float(tablero["precio_por_bolita"])
+   
     cursor.close()
     conn.close()
     return tableros
