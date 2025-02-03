@@ -723,23 +723,27 @@ def get_jugadores_tablero(tablero_id: int):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    query = """
-        SELECT j.alias, jt.color, SUM(jt.cantidad_bolitas) AS total_bolitas
-        FROM jugadores_tableros jt
-        JOIN jugadores j ON jt.jugador_id = j.numero_celular
-        WHERE jt.tablero_id = %s
-        GROUP BY j.alias, jt.color
-    """
-    
-    cursor.execute(query, (tablero_id,))
-    jugadores = cursor.fetchall()
-    cursor.close()
-    conn.close()
+    try:
+        query = """
+            SELECT j.user_id, j.alias, j.sponsor, jt.color, SUM(jt.cantidad_bolitas) AS total_bolitas
+            FROM jugadores_tableros jt
+            JOIN jugadores j ON jt.user_id = j.user_id
+            WHERE jt.id_tablero = %s
+            GROUP BY j.user_id, j.alias, j.sponsor, jt.color
+        """
+        
+        cursor.execute(query, (tablero_id,))
+        jugadores = cursor.fetchall()
 
-    if not jugadores:
-        return JSONResponse(content={"message": "No hay jugadores en este tablero."}, status_code=404)
+        if not jugadores:
+            return JSONResponse(content={"message": "No hay jugadores en este tablero."}, status_code=404)
 
-    return JSONResponse(content=jugadores)
+        return JSONResponse(content=jugadores)
 
+    except Exception as e:
+        print(f"❌ Error en el endpoint /tablero/{tablero_id}/jugadores: {e}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
-    
+    finally:
+        cursor.close()
+        conn.close()
