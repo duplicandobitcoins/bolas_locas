@@ -694,12 +694,19 @@ def handle_cambiar_nequi(user_id, rtaNuevoNequi):
 @router.get("/tableros_abiertos")
 def get_tableros_abiertos():
     print("📢 Solicitando tableros abiertos...")
-    tableros = get_open_tableros()
-    
-    if not tableros:
-        return JSONResponse(content={"message": "No hay tableros abiertos."}, status_code=404)
 
-    return JSONResponse(content=tableros)
+    try:
+        tableros = get_open_tableros()
+        print(f"✅ Tableros obtenidos: {tableros}")  # 🔍 Ver qué devuelve la consulta
+
+        if not tableros:
+            return JSONResponse(content={"message": "No hay tableros abiertos."}, status_code=404)
+
+        return JSONResponse(content=tableros)
+
+    except Exception as e:
+        print(f"❌ Error en el endpoint /tableros_abiertos: {e}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # ✅ Endpoint para obtener jugadores de un tablero específico
 @router.get("/tablero/{tablero_id}/jugadores")
