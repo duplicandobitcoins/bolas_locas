@@ -719,7 +719,7 @@ def get_tableros_abiertos():
 @router.get("/tablero/{tablero_id}/jugadores")
 def get_jugadores_tablero(tablero_id: int):
     print(f"📢 Solicitando jugadores del tablero {tablero_id}...")
-
+   try:
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -741,5 +741,7 @@ def get_jugadores_tablero(tablero_id: int):
 
     return JSONResponse(content=jugadores)
 
-
+   except Exception as e:
+        print(f"❌ Error en el endpoint /tableros_abiertos: {e}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
     
