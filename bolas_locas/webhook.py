@@ -697,6 +697,13 @@ def handle_cambiar_nequi(user_id, rtaNuevoNequi):
 
     return JSONResponse(content={"fulfillmentText": "✅ Número de Nequi actualizado correctamente."})
 
+def convertir_a_float(data):
+    for item in data:
+        for key, value in item.items():
+            if isinstance(value, Decimal):
+                item[key] = float(value)
+    return data
+
 # ✅ Endpoint para obtener los tableros abiertos
 @router.get("/tableros_abiertos")
 def get_tableros_abiertos():
@@ -734,6 +741,9 @@ def get_jugadores_tablero(tablero_id: int):
         
         cursor.execute(query, (tablero_id,))
         jugadores = cursor.fetchall()
+
+       # Convertir valores Decimal a float
+        jugadores = convertir_a_float(jugadores)
 
         if not jugadores:
             return JSONResponse(content={"message": "No hay jugadores en este tablero."}, status_code=404)
