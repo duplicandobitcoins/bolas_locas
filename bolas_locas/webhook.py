@@ -8,7 +8,7 @@ router = APIRouter()
 
 # ✅ Función para conectar a la base de datos
 def get_db_connection():
-    try:
+   
     return mysql.connector.connect(
         host=DB_HOST,
         port=DB_PORT,
@@ -16,11 +16,8 @@ def get_db_connection():
         password=DB_PASSWORD,
         database=DB_NAME
     )
-     print("✅ Conexión a la base de datos exitosa")
-    
-    except Exception as e:
-        print(f"❌ Error de conexión a la base de datos: {e}")  # 🔍 Muestra el error
-        raise e  # Lanza la excepción para verla en los logs
+  
+
 
 # ✅ Función para verificar si un usuario ya está registrado
 def check_user_registered(user_id):
