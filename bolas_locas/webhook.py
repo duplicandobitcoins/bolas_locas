@@ -6,6 +6,8 @@ from config import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
 from decimal import Decimal
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI()
 
@@ -23,7 +25,8 @@ app.add_middleware(
     allow_headers=["*"],                 # Encabezados permitidos
 )
 
-
+# Montar la carpeta /static para servir archivos estáticos
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 router = APIRouter()
