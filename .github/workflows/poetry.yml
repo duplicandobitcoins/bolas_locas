@@ -14,7 +14,7 @@ jobs:
           python-version: '3.12' # La versión de Python que especificaste en pyproject.toml
       - uses: snok/poetry-action@v1
         with:
-          poetry-version: 1.3.1 # O la versión que uses (puedes verla con `poetry --version` localmente)
+          poetry-version: 1.5.1 # O la versión que uses (puedes verla con `poetry --version` localmente)
       - run: poetry install --no-interaction
       - run: poetry lock
       - name: Commit poetry.lock
