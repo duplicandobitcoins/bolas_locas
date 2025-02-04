@@ -27,12 +27,11 @@ app.add_middleware(
 '''
 # Obtener la ruta absoluta de la carpeta static
 current_dir = os.path.dirname(os.path.abspath(__file__))
-static_dir = os.path.join(current_dir, "static")
-#current_dir = os.path.dirname(os.path.abspath(__file__))
-#static_dir = os.path.join(current_dir, "bolas_locas", "static")
+static_dir = os.path.join(current_dir, "bolas_locas", "static")
 
 # Depuración: Imprime los archivos y carpetas en el directorio actual
 print("Archivos en el directorio actual:", os.listdir("."))
+print("Archivos en bolas_locas:", os.listdir("bolas_locas"))
 
 # Montar la carpeta /static para servir archivos estáticos
 try:
