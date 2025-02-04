@@ -1,1 +1,24 @@
+name: Poetry Lock
 
+on:
+  push:
+    branches: [main] # O la rama que uses para deploy
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12' # La versión de Python que especificaste en pyproject.toml
+      - uses: snok/poetry-action@v1
+        with:
+          poetry-version: 1.3.1 # O la versión que uses (puedes verla con `poetry --version` localmente)
+      - run: poetry install --no-interaction
+      - run: poetry lock
+      - name: Commit poetry.lock
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Actualizado poetry.lock"
+          file_pattern: poetry.lock
