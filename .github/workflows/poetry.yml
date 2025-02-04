@@ -11,14 +11,14 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.12' # La versión de Python que especificaste en pyproject.toml
+          python-version: '3.12'
       - uses: snok/poetry-action@v1
         with:
-          poetry-version: 1.4.0 # O la versión que uses (puedes verla con `poetry --version` localmente)
-      - run: poetry install --no-interaction
-      - run: poetry lock
+          poetry-version: 1.5.1 # O la versión que uses localmente
+      - run: poetry install --no-interaction --only main  # Instalación solo de dependencias principales
+      - run: poetry update  # Fuerza la actualización del lock file
       - name: Commit poetry.lock
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Actualizado poetry.lock"
+          commit_message: "Actualizado poetry.lock (forzado)"
           file_pattern: poetry.lock
