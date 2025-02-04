@@ -7,7 +7,7 @@ from decimal import Decimal
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
+import os  # Importa el módulo os
 
 app = FastAPI()
 
@@ -25,8 +25,18 @@ app.add_middleware(
     allow_headers=["*"],                 # Encabezados permitidos
 )
 
+# Obtener la ruta absoluta de la carpeta static
+current_dir = os.path.dirname(os.path.abspath(__file__))
+static_dir = os.path.join(current_dir, "static")
+
+# Depuración: Imprime los archivos y carpetas en el directorio actual
+print("Archivos en el directorio actual:", os.listdir("."))
+
 # Montar la carpeta /static para servir archivos estáticos
-app.mount("/static", StaticFiles(directory="static"), name="static")
+try:
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+except RuntimeError as e:
+    print("Error al montar la carpeta static:", e)
 
 
 router = APIRouter()
