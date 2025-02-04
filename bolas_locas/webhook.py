@@ -4,11 +4,27 @@ import mysql.connector
 import re  # Para validaciones
 from config import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
 from decimal import Decimal
-from flask import Flask, jsonify, request
-from flask_cors import CORS  # Importa CORS
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-app = Flask(__name__)
-CORS(app, origins=["https://www.solutions-systems.com"])
+app = FastAPI()
+
+# Configuración de CORS
+origins = [
+    "https://www.solutions-systems.com",  # Dominio permitido
+    "http://localhost:3000",             # Para desarrollo local
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,               # Orígenes permitidos
+    allow_credentials=True,              # Permitir cookies/credenciales
+    allow_methods=["*"],                 # Métodos HTTP permitidos
+    allow_headers=["*"],                 # Encabezados permitidos
+)
+
+
+
 
 router = APIRouter()
 
