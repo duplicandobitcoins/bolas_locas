@@ -34,7 +34,7 @@ print("Archivos en el directorio actual:", os.listdir("."))
 
 # Montar la carpeta /static para servir archivos estáticos
 try:
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 except RuntimeError as e:
     print("Error al montar la carpeta static:", e)
 
