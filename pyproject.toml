@@ -10,6 +10,9 @@ fastapi = "^0.115.7"
 uvicorn = "^0.34.0"
 mysql-connector-python = "^9.2.0"
 pydantic = "^2.10.6"
+flask = "^2.3.2"
+flask-cors = "^3.0.10"
+
 
 [tool.poetry.dev-dependencies]
 # Si tienes dependencias de desarrollo, las agregarías aquí. Ejemplo:
