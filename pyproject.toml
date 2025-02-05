@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "bolas-locas"
+name = "bolas_locas"
 version = "0.1.0"
 description = ""
 authors = ["duplicandobitcoins <duplicandobitcoins@gmail.com>"]
