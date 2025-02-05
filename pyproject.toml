@@ -6,7 +6,7 @@ authors = ["duplicandobitcoins <duplicandobitcoins@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.12"
-fastapi = "^0.115.7"
+#fastapi = "^0.115.7"
 uvicorn = "^0.34.0"
 mysql-connector-python = "^9.2.0"
 pydantic = "^2.10.6"
