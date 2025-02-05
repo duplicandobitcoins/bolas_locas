@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "bolas_locas"
+name = "bolas-locas"
 version = "0.1.0"
 description = ""
 authors = ["duplicandobitcoins <duplicandobitcoins@gmail.com>"]
-packages = [{include = "bolas_locas"}]
+#packages = [{include = "bolas_locas"}]
 
 [tool.poetry.dependencies]
 python = ">=3.12"
